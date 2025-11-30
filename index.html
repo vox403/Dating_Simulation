@@ -222,6 +222,51 @@
       background: linear-gradient(to top, rgba(0,0,0,0.7) 0, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.1) 100%);
       z-index: 1;
     }
+<div id="game-bg" class="game-background"></div>
+<video id="game-video-bg" class="game-video-bg hidden" muted loop playsinline></video>
+<div class="game-backdrop"></div>
+
+<!-- ✅ 계약서 홀로그램 패널 오버레이 -->
+<div id="contract-overlay" class="game-overlay hidden">
+  <div class="contract-panel">
+    <div class="contract-header">VOXTEK EMPLOYMENT &amp; DATA UTILIZATION AGREEMENT</div>
+
+    <!-- Korean -->
+    <div class="contract-body contract-ko">
+      <p>본 계약서는 VoxTek(이하 ‘회사’)와 귀하(이하 ‘계약자’) 간의 업무 수행 및 데이터 처리에 관한 권리·의무를 규정한다.</p>
+      <p>동의 버튼을 누르는 즉시, 계약자는 아래 모든 조항에 동의한 것으로 간주된다.</p>
+      <hr>
+      <p><strong>제 1 조 — 계약 목적</strong><br>
+      본 계약의 목적은 계약자가 VoxTek의 방송·보안 업무에 참여하고, 회사의 전반적인 사업 운영에 기여하는 것이다.</p>
+      <p><strong>제 2 조 — 근무 범위</strong><br>
+      ▪ 방송 간섭, 패킷 조정, 신호 동기화 업무 지원<br>
+      ▪ 지옥 전역의 데이터 모니터링 및 이상 신호 보고<br>
+      ▪ VoxTek 브랜드 이미지 유지 및 경쟁사 대응<br>
+      ▪ 필요 시 CEO 복스의 직접 지시 수행 (거부 시 해당 로그가 자동 기록됨)</p>
+      <p class="contract-fade">… (전체 약관은 게임 내에서 축약 표시)</p>
+    </div>
+
+    <!-- English -->
+    <div class="contract-body contract-en hidden">
+      <p>This agreement defines the rights and obligations related to task execution and data handling between VoxTek (“the Company”) and you (“the Contractor”).</p>
+      <p>By selecting Agree, the Contractor is deemed to have accepted all terms below.</p>
+      <hr>
+      <p><strong>Article 1 — Purpose</strong><br>
+      The purpose of this agreement is for the Contractor to participate in VoxTek’s broadcasting and security operations and to contribute to the Company’s overall business activities.</p>
+      <p><strong>Article 2 — Scope of Work</strong><br>
+      ▪ Interference assistance in broadcasting signals, packet adjustment, and synchronization support<br>
+      ▪ Monitoring data across all of Hell and reporting any abnormal signals<br>
+      ▪ Upholding the VoxTek brand image and responding to competitor activity<br>
+      ▪ Executing direct orders from CEO Vox when required (Refusal will be automatically logged)</p>
+      <p class="contract-fade">… (Full terms are summarized for in-game display)</p>
+    </div>
+  </div>
+</div>
+<!-- ✅ 여기까지 추가 -->
+
+<div class="game-ui" id="game-click-area">
+  ...
+</div>
 
     .game-ui {
       position: relative;
@@ -556,6 +601,69 @@
 .game-video-bg {
   object-fit: cover !important;
   object-position: center center !important;
+}
+/* 오버레이 공통 */
+.game-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* 클릭은 아래(게임 UI)로 */
+}
+
+/* 계약서 패널 */
+.contract-panel {
+  pointer-events: auto;
+  width: min(780px, 95vw);
+  max-height: 70vh;
+  padding: 18px 20px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(60, 220, 255, 0.9);
+  background: radial-gradient(circle at top,
+              rgba(8, 26, 46, 0.98),
+              rgba(3, 10, 20, 0.98));
+  box-shadow:
+    0 0 24px rgba(60, 220, 255, 0.5),
+    0 0 80px rgba(10, 140, 255, 0.45);
+  color: #eaf7ff;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  overflow-y: auto;
+}
+
+.contract-header {
+  font-size: 0.82rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #9fe5ff;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(160, 220, 255, 0.5);
+}
+
+.contract-body {
+  font-size: 0.8rem;
+}
+
+.contract-body p {
+  margin: 4px 0 6px;
+}
+
+.contract-body strong {
+  color: #32e3ff;
+}
+
+.contract-fade {
+  opacity: 0.7;
+  font-size: 0.75rem;
+}
+
+/* ko / en 전환용 */
+.contract-en.hidden,
+.contract-ko.hidden {
+  display: none;
 }
 
   </style>
@@ -1300,8 +1408,9 @@
               type: "line",
               speaker: "",
               bg: "계약장면.PNG",
-              text: "📄 VoxTek 고용 및 데이터 활용 계약서\n\n본 계약서는 VoxTek(이하 '회사')와 귀하(이하 '계약자') 간의 업무 수행 및 데이터 처리에 관한 권리·의무를 규정한다.\n동의 버튼을 누르는 즉시, 계약자는 아래 모든 조항에 동의한 것으로 간주된다.\n\n(계약서 전체 내용은 실제 HTML에서 그대로 넣어둔 상태라고 가정)",
+              text: "📄 VoxTek 고용 및 데이터 활용 계약서",
               autoNext: true
+      showContractPanel: true
             },
             {
               type: "line",
@@ -2736,8 +2845,9 @@
           speaker: "",
           bg: "계약장면.PNG",
           text:
-            "📄 VoxTek Employment & Data Utilization Agreement\n\nThis agreement defines the rights and obligations related to task execution and data handling between VoxTek (\"the Company\") and you (\"the Contractor\").\nBy selecting Agree, the Contractor is deemed to have accepted all terms below.\n\n(The full contract text is already rendered as a holographic panel in HTML.)",
+            "📄 VoxTek Employment & Data Utilization",
           autoNext: true
+      showContractPanel: true
         },
         {
           type: "line",
@@ -3936,6 +4046,11 @@ normalizeScript();
 
   const $endingDbGrid   = document.getElementById("ending-db-grid");
 
+const $contractOverlay = document.getElementById("contract-overlay");
+const $contractKo      = document.querySelector(".contract-ko");
+const $contractEn      = document.querySelector(".contract-en");
+
+
   /* =============================
      화면 전환 & 표시 유틸
      ============================= */
@@ -4005,6 +4120,24 @@ normalizeScript();
   /* =============================
      장면/스텝 표시
      ============================= */
+function updateOverlayForStep(step) {
+  // 기본은 숨김
+  $contractOverlay.classList.add("hidden");
+
+  if (!step || !step.showContractPanel) return;
+
+  // 언어에 따라 ko/en 보여주기
+  if (settings.lang === "en") {
+    $contractKo.classList.add("hidden");
+    $contractEn.classList.remove("hidden");
+  } else {
+    $contractKo.classList.remove("hidden");
+    $contractEn.classList.add("hidden");
+  }
+
+  $contractOverlay.classList.remove("hidden");
+}
+
 function setBackground(bg) {
   if (!bg) return;
 
@@ -4068,6 +4201,8 @@ function refreshChapterAndBg(sceneObj) {
     const steps = sceneObj.steps || [];
     if (gameState.stepIndex >= steps.length) return;
     const step = steps[gameState.stepIndex];
+
+ updateOverlayForStep(step);
 
     // 공통 UI 초기화
     $choices.innerHTML = "";
@@ -4348,4 +4483,3 @@ if (step.bg) {
 </script>
 </body>
 </html>
-
