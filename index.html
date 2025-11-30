@@ -1,0 +1,2704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Vox Dating Simulation · V-Sync System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #02040a;
+      color: #e8f7ff;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden;
+    }
+
+    body.vsync-cursor {
+      cursor: url("data:image/svg+xml,%3Csvg width='24' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='9' cy='9' r='5' stroke='%230ff' stroke-width='2' fill='none'/%3E%3C/svg%3E") 4 4, auto;
+    }
+
+    /* ───────── Loading Screen (그대로 사용) ───────── */
+
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, #11cfff22, #02040a 60%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      color: #e8f7ff;
+      font-family: "Consolas", "DM Mono", monospace;
+    }
+
+    .loading-box {
+      border: 1px solid #00e1ff66;
+      padding: 24px 32px;
+      width: min(540px, 90vw);
+      background: #020818dd;
+      box-shadow: 0 0 24px #00e1ff55;
+    }
+
+    .loading-title {
+      text-align: center;
+      font-size: 1rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #66f7ff;
+      margin-bottom: 16px;
+    }
+
+    .loading-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      opacity: 0.15;
+      transition: opacity 0.5s;
+    }
+
+    .loading-line.active {
+      opacity: 1;
+    }
+
+    .loading-line .ko {
+      color: #9fb7ff;
+    }
+
+    .loading-progress {
+      margin-top: 16px;
+      width: 100%;
+      height: 4px;
+      background: #061321;
+      overflow: hidden;
+      border-radius: 999px;
+      border: 1px solid #00e1ff33;
+    }
+
+    .loading-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00e1ff, #6bffec);
+      box-shadow: 0 0 12px #00e1ff;
+      transition: width 0.25s linear;
+    }
+
+    /* ───────── Game Layout ───────── */
+
+    #game-root {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: none; /* loading 끝나면 flex로 변경 */
+      background: #000;
+      overflow: hidden;
+    }
+
+    #bg-layer {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+      background: #000;
+    }
+
+    #bg-layer img,
+    #bg-layer video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    #bg-layer .bg-active {
+      display: block;
+    }
+
+    #ui-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 32px;
+      pointer-events: none;
+    }
+
+    /* 상단 바: 로고, 사운드, 언어 표시 */
+
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: auto;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #8beeff;
+    }
+
+    #top-bar-left {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .vsync-pill {
+      border-radius: 999px;
+      border: 1px solid #00e1ff66;
+      padding: 4px 10px;
+      background: linear-gradient(90deg, #021826aa, #020812aa);
+      font-size: 0.7rem;
+    }
+
+    #top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tiny-label {
+      opacity: 0.6;
+      font-size: 0.7rem;
+    }
+
+    .top-toggle {
+      border-radius: 999px;
+      border: 1px solid #00e1ff66;
+      padding: 4px 10px;
+      font-size: 0.7rem;
+      background: #020b16aa;
+      cursor: pointer;
+      user-select: none;
+    }
+    .top-toggle span.value {
+      color: #fff;
+      margin-left: 6px;
+    }
+
+    /* 메인 컨텐츠 영역 */
+
+    #content-layer {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    /* 메인 메뉴 */
+
+    #main-menu {
+      pointer-events: auto;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      background: #020814dd;
+      padding: 24px 40px;
+      border-radius: 24px;
+      border: 1px solid #0ff3;
+      box-shadow: 0 0 24px #00e1ff55;
+      text-align: center;
+    }
+
+    #main-menu-title {
+      font-size: 1.3rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #9bf6ff;
+    }
+
+    #main-menu-subtitle {
+      font-size: 0.85rem;
+      color: #c3e9ffaa;
+      margin-bottom: 12px;
+    }
+
+    .menu-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 220px;
+    }
+
+    .menu-button {
+      padding: 8px 0;
+      border-radius: 999px;
+      border: 1px solid #00e1ff55;
+      background: #020c1888;
+      color: #eaf9ff;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s, transform 0.08s, box-shadow 0.15s;
+    }
+
+    .menu-button:hover {
+      background: #041a2888;
+      box-shadow: 0 0 12px #00e1ff55;
+      transform: translateY(-1px);
+    }
+
+    .menu-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    /* 엔딩 DB / 크레딧 / 설정 공통 카드 */
+
+    .panel {
+      pointer-events: auto;
+      display: none;
+      max-height: 80vh;
+      overflow: hidden;
+      background: #020814ee;
+      border-radius: 20px;
+      border: 1px solid #0ff3;
+      padding: 20px 24px;
+      box-shadow: 0 0 24px #00e1ff55;
+      width: min(780px, 96vw);
+      color: #eaf9ff;
+      font-size: 0.85rem;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .panel-title {
+      font-size: 0.95rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #8df5ff;
+    }
+
+    .panel-close {
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #00e1ff55;
+      background: #020b16aa;
+    }
+
+    .panel-body {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 4px;
+      scrollbar-width: thin;
+    }
+
+    .credits-block {
+      margin-bottom: 16px;
+      white-space: pre-line;
+    }
+
+    .credits-block-title {
+      text-align: center;
+      margin-bottom: 8px;
+      color: #9bf6ff;
+    }
+
+    /* 엔딩 DB */
+
+    .ending-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .ending-card {
+      border-radius: 16px;
+      background: #010814dd;
+      border: 1px solid #00e1ff44;
+      padding: 10px 10px 12px;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .ending-card img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 6px;
+      object-fit: cover;
+      max-height: 100px;
+    }
+
+    .ending-code {
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #66f7ff;
+      margin-bottom: 4px;
+    }
+
+    .ending-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .ending-desc {
+      opacity: 0.7;
+      font-size: 0.75rem;
+    }
+
+    /* 대화 / 스토리 UI */
+
+    #story-layer {
+      pointer-events: auto;
+      display: none;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #chapter-label {
+      position: absolute;
+      top: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid #00e1ff55;
+      background: #020b16aa;
+      font-size: 0.8rem;
+      color: #8deaff;
+      text-align: center;
+      white-space: nowrap;
+      max-width: 80%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #dialogue-box {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      width: min(960px, 100%);
+      padding: 12px 18px 14px;
+      background: linear-gradient(180deg, #020b16cc, #02040fef);
+      border-radius: 20px;
+      border: 1px solid #00e1ff88;
+      box-shadow: 0 0 24px #000c;
+    }
+
+    #speaker-label {
+      font-size: 0.8rem;
+      color: #8cf1ff;
+      margin-bottom: 4px;
+      min-height: 1em;
+    }
+
+    #dialogue-text {
+      min-height: 3.2em;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    #next-indicator {
+      position: absolute;
+      right: 12px;
+      bottom: 8px;
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    #click-layer {
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+    }
+
+    /* Choice UI */
+
+    #choice-box {
+      position: absolute;
+      left: 50%;
+      bottom: 26%;
+      transform: translateX(-50%);
+      width: min(860px, 100%);
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .choice-button {
+      border-radius: 999px;
+      border: 1px solid #00e1ff99;
+      background: #020b16cc;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.12s, transform 0.06s, box-shadow 0.12s;
+    }
+
+    .choice-button:hover {
+      background: #06192acc;
+      box-shadow: 0 0 12px #00e1ff66;
+      transform: translateY(-1px);
+    }
+
+    .choice-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    /* 시스템 설정 패널 컨트롤 */
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+
+    .settings-label {
+      opacity: 0.8;
+    }
+
+    .settings-control {
+      display: flex;
+      gap: 6px;
+    }
+
+    .settings-chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #00e1ff55;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: #020b16bb;
+      opacity: 0.6;
+    }
+
+    .settings-chip.active {
+      opacity: 1;
+      border-color: #00f0ff;
+      box-shadow: 0 0 8px #00e1ff55;
+    }
+
+    /* Scrollbar */
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #00e1ff66;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    @media (max-width: 768px) {
+      #ui-layer {
+        padding: 10px 12px;
+      }
+      #dialogue-box {
+        bottom: 12px;
+        padding: 10px 12px 12px;
+      }
+      #chapter-label {
+        top: 36px;
+      }
+      #choice-box {
+        bottom: 32%;
+      }
+    }
+  </style>
+</head>
+<body class="vsync-cursor">
+  <!-- ───────── LOADING SCREEN ───────── -->
+  <div id="loading-screen">
+    <div class="loading-box">
+      <div class="loading-title">V-Sync ACCESS PROTOCOL</div>
+      <div class="loading-line" data-step="0">
+        <span class="en">Scanning User Credentials…</span>
+        <span class="ko">사용자 인증 정보를 스캔하는 중…</span>
+      </div>
+      <div class="loading-line" data-step="1">
+        <span class="en">Verifying Access Level…</span>
+        <span class="ko">접근 권한을 검증하는 중…</span>
+      </div>
+      <div class="loading-line" data-step="2">
+        <span class="en">All Checks Passed.</span>
+        <span class="ko">모든 체크 통과.</span>
+      </div>
+      <div class="loading-line" data-step="3">
+        <span class="en">…Clear. Access Granted.</span>
+        <span class="ko">…클리어. 접근 승인.</span>
+      </div>
+      <div class="loading-progress">
+        <div class="loading-progress-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── GAME ROOT ───────── -->
+  <div id="game-root">
+    <!-- 배경 레이어 -->
+    <div id="bg-layer"></div>
+
+    <!-- UI 레이어 -->
+    <div id="ui-layer">
+      <div id="top-bar">
+        <div id="top-bar-left">
+          <div class="vsync-pill">V-Sync · Vox Simulation</div>
+        </div>
+        <div id="top-bar-right">
+          <div class="top-toggle" id="top-sound-toggle">
+            <span class="tiny-label">SOUND</span>
+            <span class="value">ON</span>
+          </div>
+          <div class="top-toggle" id="top-lang-toggle">
+            <span class="tiny-label">LANG</span>
+            <span class="value">KO</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="content-layer">
+        <!-- 메인 메뉴 -->
+        <div id="main-menu">
+          <div id="main-menu-title">VOX DATING SIMULATION</div>
+          <div id="main-menu-subtitle">V-Sync Controlled Scenario · v1.0</div>
+          <div class="menu-buttons">
+            <button class="menu-button" data-action="start">[ START ]</button>
+            <button class="menu-button" data-action="ending-db">[ ENDING DATABASE ]</button>
+            <button class="menu-button" data-action="credits">[ CREDITS ]</button>
+            <button class="menu-button" data-action="settings">[ SYSTEM SETTINGS ]</button>
+          </div>
+        </div>
+
+        <!-- 엔딩 DB 패널 -->
+        <div id="ending-panel" class="panel">
+          <div class="panel-header">
+            <div class="panel-title">ENDING DATABASE</div>
+            <button class="panel-close" data-close="ending-panel">CLOSE</button>
+          </div>
+          <div class="panel-body">
+            <div class="ending-grid" id="ending-grid"></div>
+          </div>
+        </div>
+
+        <!-- 크레딧 패널 -->
+        <div id="credits-panel" class="panel">
+          <div class="panel-header">
+            <div class="panel-title">CREDITS</div>
+            <button class="panel-close" data-close="credits-panel">CLOSE</button>
+          </div>
+          <div class="panel-body" id="credits-body">
+            <!-- 내용은 JS에서 언어에 맞게 채움 -->
+          </div>
+        </div>
+
+        <!-- 시스템 설정 패널 -->
+        <div id="settings-panel" class="panel">
+          <div class="panel-header">
+            <div class="panel-title">SYSTEM SETTINGS</div>
+            <button class="panel-close" data-close="settings-panel">CLOSE</button>
+          </div>
+          <div class="panel-body">
+            <div class="settings-row">
+              <div class="settings-label">언어 / Language</div>
+              <div class="settings-control">
+                <div class="settings-chip" data-setting="lang" data-value="ko">Korean</div>
+                <div class="settings-chip" data-setting="lang" data-value="en">English</div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">자동 사운드 / Auto Sound</div>
+              <div class="settings-control">
+                <div class="settings-chip" data-setting="autoSound" data-value="on">ON</div>
+                <div class="settings-chip" data-setting="autoSound" data-value="off">OFF</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;font-size:0.75rem;opacity:0.7;">
+              * START를 누른 이후의 장면부터 설정이 적용됩니다.<br>
+              * 브라우저 정책상, 첫 사용자 입력 전에는 자동 재생이 제한될 수 있습니다.
+            </div>
+          </div>
+        </div>
+
+        <!-- 스토리 레이어 -->
+        <div id="story-layer">
+          <div id="click-layer"></div>
+          <div id="chapter-label"></div>
+          <div id="choice-box"></div>
+          <div id="dialogue-box">
+            <div id="speaker-label"></div>
+            <div id="dialogue-text"></div>
+            <div id="next-indicator">&gt;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── SCRIPT (엔진) ───────── -->
+  <script>
+    // ─────────────────────────────────
+    // Global State + Audio
+    // ─────────────────────────────────
+    const state = {
+      lang: 'ko',           // 'ko' or 'en'
+      autoSound: true,      // 자동 사운드
+      soundEnabled: true,   // 전체 사운드 ON/OFF
+      playerName: 'V-User',
+      flags: {
+        c3: null,
+        c4: null,
+        c5: null,
+        c6: null
+      },
+      currentSceneId: null,
+      currentSeq: [],
+      currentIndex: 0,
+      autoTimer: null,
+      endingSeen: [false, false, false, false, false]  // 0~4
+    };
+
+    const STORAGE_KEYS = {
+      SETTINGS: 'vds_settings',
+      ENDINGS: 'vds_endings'
+    };
+
+    const audios = {
+      main: new Audio('assets/Falling.mp3'),
+      scene0: new Audio('assets/Falling.mp3'),
+      scene1: new Audio('assets/Falling.mp3'),
+      scene2: new Audio('assets/Falling.mp3'),
+      scene3: new Audio('assets/Falling.mp3'),
+      scene4: new Audio('assets/Falling.mp3'),
+      scene5: new Audio('assets/Falling.mp3')
+    };
+    Object.values(audios).forEach(a => { a.loop = true; });
+
+    let currentAudioKey = null;
+
+    function applySettingsFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+        if (raw) {
+          const saved = JSON.parse(raw);
+          if (saved.lang) state.lang = saved.lang;
+          if (typeof saved.autoSound === 'boolean') state.autoSound = saved.autoSound;
+        }
+        const rawEnd = localStorage.getItem(STORAGE_KEYS.ENDINGS);
+        if (rawEnd) {
+          const arr = JSON.parse(rawEnd);
+          if (Array.isArray(arr) && arr.length === 5) state.endingSeen = arr;
+        }
+      } catch (e) {
+        console.warn('settings parse error', e);
+      }
+    }
+
+    function saveSettings() {
+      const data = {
+        lang: state.lang,
+        autoSound: state.autoSound
+      };
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(data));
+    }
+
+    function saveEndings() {
+      localStorage.setItem(STORAGE_KEYS.ENDINGS, JSON.stringify(state.endingSeen));
+    }
+
+    function updateTopBar() {
+      document.querySelector('#top-lang-toggle .value').textContent = state.lang.toUpperCase();
+      document.querySelector('#top-sound-toggle .value').textContent = state.soundEnabled ? 'ON' : 'OFF';
+    }
+
+    function playBgm(key) {
+      if (currentAudioKey && audios[currentAudioKey]) {
+        audios[currentAudioKey].pause();
+      }
+      currentAudioKey = key;
+      if (!state.soundEnabled) return;
+      const a = audios[key];
+      if (!a) return;
+      if (state.autoSound) {
+        a.currentTime = 0;
+        a.play().catch(() => {});
+      }
+    }
+
+    function toggleGlobalSound() {
+      state.soundEnabled = !state.soundEnabled;
+      updateTopBar();
+      if (!state.soundEnabled) {
+        if (currentAudioKey && audios[currentAudioKey]) audios[currentAudioKey].pause();
+      } else if (state.currentSceneId) {
+        const scene = scenes[state.currentSceneId];
+        if (scene && scene.bgm) playBgm(scene.bgm);
+      }
+    }
+
+    // ─────────────────────────────────
+    // Story Data 구조
+    // type: 'text' | 'choice' | 'jump' | 'ending'
+    // ─────────────────────────────────
+
+    const scenes = {
+      // ───── 메인 메뉴용 가상 씬 ─────
+      mainMenu: {
+        id: 'mainMenu',
+        bg: 'assets/(1)Calibration_Suite_door.png',
+        bgType: 'image',
+        bgFit: 'cover',
+        bgDark: true,
+        bgm: 'main',
+        chapterKo: '',
+        chapterEn: ''
+      },
+
+      // ───── Scene 0 : V-Sync Calibration Suite 입구 ─────
+      scene0_intro: {
+        id: 'scene0_intro',
+        bg: 'assets/(1)Calibration_Suite_door.png',
+        bgType: 'image',
+        bgm: 'scene0',
+        chapterKo: "[장면0] V-타워 · 브이-싱크 조율실 문 앞",
+        chapterEn: "[Scene0] V-Tower · Entrance to the V-Sync Calibration Suite",
+        seq: [
+          {
+            type: 'text',
+            speakerKo: '',
+            speakerEn: '',
+            ko: "> 당신이 문 앞에 다가서는 순간, 정적을 가르듯 치직─하는 작은 전류음이 튀었다.\n> 곧 금속 패널의 중앙을 따라 얇은 네온 라인이 점등되고, 그 위로 홀로그램 패널과 네모난 키보드가 공중에 펼쳐진다.",
+            en: "> As you step toward the door, a sharp crackle cuts through the silence.\n> A thin neon line flickers to life down the center of the metal panel, and in its wake, a holographic interface and square keypad materialize in midair.",
+            media: { type: 'video', src: 'assets/SC_01.mp4' }
+          },
+          {
+            type: 'text',
+            speakerKo: '',
+            speakerEn: '',
+            ko: "> [홀로그램 : 방문 사유를 입력하세요.]",
+            en: "> [Hologram: Please enter your reason for visiting.]"
+          },
+          {
+            type: 'choice',
+            id: 'choice1',
+            options: [
+              {
+                value: 1,
+                ko: "(1) Vox Dating Simulation Project에 관심이 있습니다.",
+                en: "(1) I’m interested in the Vox Dating Simulation Project.",
+                next: 'scene0_afterChoice1_1'
+              },
+              {
+                value: 2,
+                ko: "(2) 그냥 보고 싶어서요.",
+                en: "(2) I just wanted to take a look.",
+                next: 'end0_rejection'
+              }
+            ]
+          }
+        ]
+      },
+
+      scene0_afterChoice1_1: {
+        id: 'scene0_afterChoice1_1',
+        bg: 'assets/Sc_02.mp4',
+        bgType: 'video',
+        bgm: 'scene0',
+        chapterKo: "",
+        chapterEn: "",
+        seq: [
+          {
+            type: 'text',
+            ko: "> 입력을 마치자, 홀로그램이 미세한 진동과 함께 상태 메시지를 띄웠다.\n> [홀로그램 : 확인 중...]",
+            en: "> Once you finish entering your response, the hologram emits a faint vibration and displays a status message.\n> [Hologram: Verifying…]",
+            media: { type: 'video', src: 'assets/Sc_02.mp4' }
+          },
+          {
+            type: 'text',
+            ko: "> 잠시 후, 문면 하단을 따라 파란 전류 라인이 다시 치직─하고 흐르며 신호 검증이 완료되었음을 알렸다.\n> 이어서 홀로그램에 최종 문구가 나타난다.",
+            en: "> A moment later, a blue current streaks across the lower edge of the door with a sharp crackle, signaling that the verification is complete.\n> The hologram then displays the final message."
+          },
+          {
+            type: 'text',
+            ko: "> [홀로그램 : 승인되었습니다.]",
+            en: "> [Hologram: Access granted.]",
+            media: { type: 'video', src: 'assets/Sc_04.mp4' }
+          },
+          {
+            type: 'text',
+            ko: "> 다음 순간, 금속 패널이 매끄럽게 좌측으로 미끄러지듯 열렸다.",
+            en: "> In the next moment, the metal panel slides open to the left with smooth, effortless motion.",
+            media: { type: 'image', src: 'assets/Calibration_Suite.png' }
+          },
+          {
+            type: 'text',
+            ko: "> 틈 사이로 차갑고 정제된 푸른 조율실의 조명이 흐르며 내부가 조용히 드러난다.",
+            en: "> Through the opening, the cold, refined blue light of the Calibration Room spills out, quietly revealing the interior."
+          },
+          {
+            type: 'text',
+            speakerKo: "V-Sync",
+            speakerEn: "V-Sync",
+            ko: "「 방금, \"복스 동기화 시뮬레이션\"에 관심이 있다고 하셨습니까? 해당 입력 신호 확인。기록 완료。」",
+            en: "「 Just now, did you state that you’re interested in the ‘Vox Synchronization Simulation’? Input signal confirmed。Record updated。」",
+            media: { type: 'image', src: 'assets/201.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "V-Sync",
+            speakerEn: "V-Sync",
+            ko: "「 당신의 목적──그분을 더 이해하고 싶다는 응답, 수신했습니다。」",
+            en: "「 Your intent—your wish to understand him better—has been received。」",
+            media: { type: 'image', src: 'assets/200.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "V-Sync",
+            speakerEn: "V-Sync",
+            ko: "「 프로세스 진행을 위해, 식별용 이름을 입력하십시오。」",
+            en: "「 For process continuation, please enter an identification name。」",
+            media: { type: 'image', src: 'assets/100.png' }
+          },
+          {
+            type: 'choice',
+            id: 'choice2_name',
+            options: [
+              {
+                value: 1,
+                ko: "(1) [이름을 입력하세요.]",
+                en: "(1) [Please enter your name.]",
+                next: 'scene0_afterName'
+              }
+            ],
+            promptName: true
+          }
+        ]
+      },
+
+      scene0_afterName: {
+        id: 'scene0_afterName',
+        bg: 'assets/201.png',
+        bgType: 'image',
+        bgm: 'scene0',
+        chapterKo: "",
+        chapterEn: "",
+        seq: [
+          {
+            type: 'text',
+            speakerKo: state.playerName,
+            speakerEn: state.playerName,
+            ko: () => `> [이름] : ${state.playerName} 입니다.`,
+            en: () => `> [Name] : My name is ${state.playerName}.`
+          },
+          {
+            type: 'text',
+            speakerKo: "V-Sync",
+            speakerEn: "V-Sync",
+            ko: () => `「 좋습니다。그렇다면, 지금 당장 보내드리죠.${state.playerName}。」`,
+            en: () => `「 Very well。In that case, I’ll send you in right away, ${state.playerName}。」`
+          },
+          {
+            type: 'text',
+            speakerKo: "V-Sync",
+            speakerEn: "V-Sync",
+            ko: "「 입력 신호 확인。···승인。프로토콜 즉시 실행。」",
+            en: "「 Input signal confirmed。」\n「 ···Approved。」\n「 Protocol executing immediately。」",
+            media: { type: 'image', src: 'assets/201.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "V-Sync",
+            speakerEn: "V-Sync",
+            ko: () => `「 이제 전송합니다.${state.playerName}。」`,
+            en: () => `「 Transmitting now, ${state.playerName}。」`
+          },
+          {
+            type: 'text',
+            ko: "> 브이-싱크는 잠잠하던 오른손의 전류를 조용히 증폭시키더니, 손바닥을 들어 올려 당신의 머리 위에 가볍게 접촉했다.\n> 순간, 손끝에서 퍼지는 전자 파형이 당신의 고유 신경 주파수와 강제로 동기화되기 시작한다.",
+            en: "> V-Sync quietly amplifies the current in his once-dormant right hand, then lifts his palm and makes a light contact atop your head.\n> In that instant, an electronic waveform spreads from his fingertips, forcibly beginning to synchronize with your unique neural frequency.",
+            media: { type: 'image', src: 'assets/send.gif' }
+          },
+          {
+            type: 'text',
+            speakerKo: "V-Sync",
+            speakerEn: "V-Sync",
+            ko: "「 신호 주입 프로토콜 개시··· 」",
+            en: "「 Initiating signal-injection protocol··· 」"
+          },
+          {
+            type: 'text',
+            ko: "> 시야가 흔들리고, 금속성 울림과 함께\n> 당신의 인식이 다른 공간으로 '전송'된다.",
+            en: "> Your vision wavers, and with a metallic reverberation,\n> your consciousness is ‘transferred’ to another space.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'jump',
+            next: 'scene1_intro'
+          }
+        ]
+      },
+
+      // ───── END 0 : 승인 거절 ─────
+      end0_rejection: {
+        id: 'end0_rejection',
+        bg: 'assets/(1)Calibration_Suite_door.png',
+        bgType: 'image',
+        bgm: 'scene0',
+        chapterKo: "■ END 0. 승인거절",
+        chapterEn: "■ END 0. Rejection",
+        seq: [
+          {
+            type: 'text',
+            ko: "> 문은 그대로 잠긴 채 미동도 없다.\n> 홀로그램은 서서히 사라지고 인터페이스가 닫힌다.",
+            en: "> The door remains locked, completely unmoving.\n> The hologram slowly fades out as the interface shuts down.",
+            media: { type: 'video', src: 'assets/Sc_03.mp4' }
+          },
+          {
+            type: 'text',
+            ko: "승인거절 :: 응답 불필요. 다음 절차로 이동합니다.",
+            en: "Rejection :: No response required. Proceeding to the next protocol."
+          },
+          {
+            type: 'ending',
+            endingIndex: 0
+          }
+        ]
+      },
+
+      // ───── Scene1 : VoxTek 스카우트 ─────
+      scene1_intro: {
+        id: 'scene1_intro',
+        bg: 'assets/vox_1-0.png',
+        bgType: 'image',
+        bgm: 'scene1',
+        chapterKo: "[장면1] 엔터테인먼트 지구 — Chapter 1. 첫 만남 — VoxTek 스카우트",
+        chapterEn: "[Scene1] Entertainment District — Chapter 1. First Encounter — VoxTek Scout",
+        seq: [
+          {
+            type: 'text',
+            ko: "> 눈앞이 갑작스레 번쩍이는 바람에 잠시 시야가 흔들린다.\n> 천천히 조명을 적응시키며 고개를 들자——\n> 환락가의 네온 불빛 사이로 복스가 똑바로 서 있었다.",
+            en: "> A sudden flash erupts before your eyes, making your vision waver for a moment.\n> As your eyes slowly adjust to the light and you lift your head—\n> Vox stands there, framed by the neon glow of the Entertainment District.",
+            media: { type: 'image', src: 'assets/vox_1-1.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "안녕하신가?\n방금… 꿈이라도 꾸는 얼굴이군. 꿈을 꾸는 악마는—늘 매력적이지.\n어때? 우리 둘만의 더 나은 미래를 함께 만들어보지 않겠어?",
+            en: "Hello. Well now… looking a bit dazed, aren’t we?\nA demon who dreams is always… irresistible.\nSo? Shall we build a better future—just the two of us?"
+          },
+          {
+            type: 'choice',
+            id: 'choice3',
+            options: [
+              {
+                value: 1,
+                ko: "(1) 당신 같은 악마를 기다리고 있었어요!",
+                en: "(1) I’ve been waiting for a demon like you!",
+                next: 'scene1_c1'
+              },
+              {
+                value: 2,
+                ko: "(2) 조건부터 듣죠. 난 싸구려 인력이 아니라서요.",
+                en: "(2) Let’s hear the terms first. I’m not cheap labor.",
+                next: 'scene1_c2'
+              },
+              {
+                value: 3,
+                ko: "(3) …솔직히, 당신 같은 타입은 좀 무서운데요.",
+                en: "(3) …Honestly, someone like you is a little scary.",
+                next: 'scene1_c3'
+              },
+              {
+                value: 4,
+                ko: "(4) 관심 없어요. TV에서나 떠들던가.",
+                en: "(4) Not interested. Go shout about it on TV or something.",
+                next: 'scene1_c4'
+              }
+            ],
+            flagKey: 'c3'
+          }
+        ]
+      },
+
+      scene1_c1: {
+        id: 'scene1_c1',
+        bg: 'assets/vox_1-2.png',
+        bgType: 'image',
+        bgm: 'scene1',
+        chapterKo: "",
+        chapterEn: "",
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 당신 같은 악마를 기다리고 있었어요!`,
+            en: () => `> [Name] : I’ve been waiting for a demon like you!`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "탁월한 선택입니다.",
+            en: "An excellent choice."
+          },
+          {
+            type: 'text',
+            ko: "> 그렇게, 당신은 복스를 따라 V-타워로 향한다.",
+            en: "> And so, you follow Vox toward the V-Tower.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          { type: 'jump', next: 'scene2_intro' }
+        ]
+      },
+
+      scene1_c2: {
+        id: 'scene1_c2',
+        bg: 'assets/vox_1-2.png',
+        bgType: 'image',
+        bgm: 'scene1',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 조건부터 듣죠. 난 싸구려 인력이 아니라서요.`,
+            en: () => `> [Name] : Let’s hear the terms first. I’m not cheap labor.`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "흠, 협상 태도군.\n좋아, V-타워로 가서 아주 천천히, 이해하기 쉽도록 설명해드리죠.",
+            en: "Hm. Negotiation, is it? Very well.\nLet’s head to the V-Tower, and I’ll explain everything slowly—\nin a way you can understand."
+          },
+          {
+            type: 'text',
+            ko: "> 그렇게, 당신은 복스를 따라 V-타워로 향한다.",
+            en: "> And so, you follow Vox toward the V-Tower.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          { type: 'jump', next: 'scene2_intro' }
+        ]
+      },
+
+      scene1_c3: {
+        id: 'scene1_c3',
+        bg: 'assets/vox_1-2.png',
+        bgType: 'image',
+        bgm: 'scene1',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : …솔직히, 당신 같은 타입은 좀 무서운데요.`,
+            en: () => `> [Name] : …Honestly, someone like you is a little scary.`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "이런, 저희 V-타워에는 그런 당신을 위한 많은 것들이 준비되어 있습니다.\n멋진 패션, 당신만을 위한 TV쇼, 광고 스타가 될 기회... 같은 것들 말이죠.\n후회하지 않을 겁니다. 저를 믿으세요.",
+            en: "Oh? In that case, our V-Tower has plenty prepared just for someone like you.\nStunning fashion, your very own TV show, the chance to become the face of a major campaign…\nYou won’t regret it. Trust me."
+          },
+          {
+            type: 'text',
+            ko: "> 결국 복스의 회유에 못 이긴 당신은  V-타워로 향한다.",
+            en: "> In the end, unable to resist Vox’s persuasion, you head toward the V-Tower.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          { type: 'jump', next: 'scene2_intro' }
+        ]
+      },
+
+      scene1_c4: {
+        id: 'scene1_c4',
+        bg: 'assets/vox_1-2.png',
+        bgType: 'image',
+        bgm: 'scene1',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 관심 없어요. TV에서나 떠들던가.`,
+            en: () => `> [Name] : Not interested. Go shout about it on TV or something.`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "아, 거절이라. TV에서나 떠들라는 말은 꽤 신선하군요.\n제가 이 미디어의 왕인데 말이죠.\n그런데 말이죠, 전 당신 같은 스타는 그냥 흘려보낼 수가 없어서요.",
+            en: "Ah, a rejection, hm?\nTelling me to go shout on TV—now that’s refreshing.\nEspecially considering I’m the king of media.\nBut you see… I can’t just let a potential star like you slip away."
+          },
+          {
+            type: 'text',
+            ko: "> 복스는 당신의 거절을 흥미롭게 여긴 듯, 억지로라도 확인해야 한다며 당신을 V-타워로 데려간다.",
+            en: "> Intrigued by your refusal, Vox insists on \"confirming it himself\" and ends up taking you to the V-Tower anyway.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          { type: 'jump', next: 'scene2_intro' }
+        ]
+      },
+
+      // ───── Scene2 : 계약 체결 — 약관 지옥 (요약 버전 + Choice4) ─────
+      scene2_intro: {
+        id: 'scene2_intro',
+        bg: 'assets/개인집무실.png',
+        bgType: 'image',
+        bgm: 'scene2',
+        chapterKo: "[장면2] V-타워 · 복스의 개인 집무실 안 — Chapter 2. 계약 체결 — 약관 지옥",
+        chapterEn: "[Scene2] V-Tower · Inside Vox’s Office — Chapter 2. Contract Signing — Terms of Hell",
+        seq: [
+          {
+            type: 'text',
+            ko: "> 집무실로 들어서자, 전혀 다른 공기가 몸을 감싼다.\n> 정면 벽에는 복스의 상반신이 담긴 거대한 초상화와 화려한 광고 포스터들이 가지런히 걸려 있어,\n> 이 공간의 주인이 누구인지—한순간도 의심할 여지를 주지 않았다.",
+            en: "> As you step into the office, a completely different air settles around you.\n> On the front wall, a massive portrait of Vox hangs alongside an array of lavish posters—\n> leaving no doubt as to who owns this space.",
+            media: { type: 'image', src: 'assets/계약장면.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "자, 여기까지 오느라 수고했어. 이제… 아주 간단한 절차만 남았군.\n계약서지. '단순한 고용 계약'이라고는 하지만… 세부 조항은 꽤 정교해.\n물론, 대부분은 동의 버튼 하나면 끝나는 문제지만 말이야.",
+            en: "Well then, you’ve come quite a long way. Now… only a very simple procedure remains.\nThe contract. They call it a 'simple employment agreement,' but the finer clauses are surprisingly elaborate.\nOf course, most of it can be handled with a single tap on the agree button."
+          },
+          // 실제 게임에선 여기 계약서 패널 HTML로 보여주면 됨 (지금은 설명만)
+          {
+            type: 'choice',
+            id: 'choice4',
+            options: [
+              {
+                value: 1,
+                ko: "(1) 전부 동의합니다. 빠르게 가죠.",
+                en: "(1) I agree to everything. Let’s get this over with.",
+                next: 'scene2_c1'
+              },
+              {
+                value: 2,
+                ko: "(2) 데이터 권한 부분은 수정해요. 제 정보는 제 겁니다.",
+                en: "(2) Let’s revise the Data Access & Cognitive Permission section. My information belongs to me.",
+                next: 'scene2_c2'
+              },
+              {
+                value: 3,
+                ko: "(3) 성과급 올려주면 리스크는 감수하죠.",
+                en: "(3) Raise the bonus, and I’ll take the risk.",
+                next: 'scene2_c3'
+              },
+              {
+                value: 4,
+                ko: "(4) 이거 함정이죠? 나 안 해요.",
+                en: "(4) This is a trap, isn’t it? I’m out.",
+                next: 'scene2_c4'
+              }
+            ],
+            flagKey: 'c4'
+          }
+        ]
+      },
+
+      // Scene2 분기들 요약 (실제 대사는 네가 더 추가해도 됨)
+      scene2_c1: {
+        id: 'scene2_c1',
+        bg: 'assets/계약장면.png',
+        bgType: 'image',
+        bgm: 'scene2',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 전부 동의합니다. 빠르게 가죠.`,
+            en: () => `> [Name] : I agree to everything. Let’s get this over with.`
+          },
+          {
+            type: 'text',
+            ko: "> 당신이 ‘전체 동의’ 버튼을 가볍게 누르자,\n> 홀로그램 계약 패널이 푸른 빛을 내며 단숨에 사라졌다.",
+            en: "> As you tap the Agree to All Terms button,\n> the holographic contract panel flashes blue—and dissolves in an instant."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "좋아. 이보다 더 멋진 태도는 없지.\n신속한 악마는 곧 성공으로 이어지는 법이니까.",
+            en: "Excellent. There’s no attitude I admire more.\nA swift demon is always a successful one."
+          },
+          {
+            type: 'text',
+            ko: "> 계약은 그렇게 체결되었다.\n> 복스의 만족스러운 웃음이 집무실 안에서 울려 퍼진다.",
+            en: "> And just like that, the contract is sealed.\n> Vox’s satisfied laughter echoes throughout the office.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          { type: 'jump', next: 'scene3_stub' }
+        ]
+      },
+
+      scene2_c2: {
+        id: 'scene2_c2',
+        bg: 'assets/계약장면.png',
+        bgType: 'image',
+        bgm: 'scene2',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 데이터 접근 및 사용 권한 부분은 수정해요. 제 정보는 제 겁니다.`,
+            en: () => `> [Name] : Let’s revise the Data Access & Cognitive Permission section. My information belongs to me.`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "오… 이 조항을 건드리는 악마는 드물지.\n하지만 그 점이 오히려 마음에 드는군. 협상력은 중요하니까.",
+            en: "Oh… not many demons dare touch that clause.\nBut I like that. Negotiation skills are valuable."
+          },
+          {
+            type: 'text',
+            ko: "> 복스가 손가락을 가볍게 튕기자,\n> 홀로그램 계약서의 일부 문항이 즉시 재정렬되며 수정된다.\n> 패널 중앙에는 ‘데이터 접근 범위: 제한적’ 이라는 문구가 새로 새겨진다.",
+            en: "> With a light snap of his fingers,\n> several lines of the holographic contract instantly shift and rearrange.\n> A new phrase etches itself across the center of the panel: \"Data Access Scope: Restricted.\""
+          },
+          {
+            type: 'text',
+            ko: "> 당신은 조정된 계약서에 천천히 서명한다.",
+            en: "> Slowly, you sign the newly revised contract.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          { type: 'jump', next: 'scene3_stub' }
+        ]
+      },
+
+      scene2_c3: {
+        id: 'scene2_c3',
+        bg: 'assets/계약장면.png',
+        bgType: 'image',
+        bgm: 'scene2',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 성과급 올려주면 리스크는 감수하죠.`,
+            en: () => `> [Name] : Raise the bonus, and I’ll take the risk.`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "하하! 협상할 줄 아는군.\n좋아. ‘보상 및 성과급’ 섹션을—이렇게—올려보지.",
+            en: "Ha! So you can negotiate.\nVery well. Let’s bump the \"Compensation & Performance Bonuses\" section—just like this."
+          },
+          {
+            type: 'text',
+            ko: "> 성과급 보상 수치가 즉시 300%로 상승하며 패널의 항목들이 빠르게 다시 정렬된다.",
+            en: "> The performance bonus value surges to 300%, and the entire section reorders itself at high speed."
+          },
+          {
+            type: 'text',
+            ko: "> 결국, 당신은 흥정 끝에 훨씬 더 유리한 보상 조건을 이끌어냈다.",
+            en: "> In the end, through firm bargaining, you secure a far more advantageous compensation package.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          { type: 'jump', next: 'scene3_stub' }
+        ]
+      },
+
+      scene2_c4: {
+        id: 'scene2_c4',
+        bg: 'assets/계약장면.png',
+        bgType: 'image',
+        bgm: 'scene2',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 이거 함정이죠? 나 안 해요.`,
+            en: () => `> [Name] : This is a trap, isn’t it? I’m out.`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "…함정?\n난 단지, 너에게 엄청난 기회를 주려는 건데?",
+            en: "…A trap?\nI’m only trying to offer you an extraordinary opportunity."
+          },
+          {
+            type: 'text',
+            ko: "> 복스는 여전히 웃고 있었지만,\n> 그 미소 아래로 스며드는 분위기는—묘하게 섬뜩했다.",
+            en: "> He’s still smiling,\n> but something beneath that smile seeps through—something quietly unsettling."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "그래. 뭐가 그렇게 불만인지는 모르겠지만…\n이 공간 안에서는,\n<span style=\"font-size:1.45em; font-weight:900; letter-spacing:2px;\">내가 왕이고</span>\n<span style=\"font-size:1.55em; font-weight:900; letter-spacing:3px;\">법이야.</span>",
+            en: "Fine. I don’t know what you’re so unhappy about…\nBut, in this space…\n<span style=\"font-size:1.45em; font-weight:900; letter-spacing:2px;\">I am the king.</span>\n<span style=\"font-size:1.55em; font-weight:900; letter-spacing:3px;\">And the law.</span>"
+          },
+          {
+            type: 'text',
+            ko: "> 말이 끝나기도 전에,\n> 복스는 손짓으로 홀로그램 패널을 강하게 당신 쪽으로 밀어붙였다.\n> 결국 굴복한 것은—당신 쪽이었다.",
+            en: "> Before he even finishes speaking,\n> Vox shoves the holographic panel toward you with a sharp gesture.\n> And in the end—you’re the one who yields.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          { type: 'jump', next: 'scene3_stub' }
+        ]
+      },
+
+      // ───── Scene3 : V-타워 · 666 뉴스 스튜디오 ─────
+      scene3_stub: {
+        id: 'scene3_stub',
+        bg: 'assets/studio_1.png',
+        bgType: 'image',
+        bgm: 'scene3',
+        chapterKo: "[장면3] V-타워 · 666 뉴스 스튜디오 안\nChapter 3. 첫 임무 — ‘지옥 방송’",
+        chapterEn: "[Scene3] V-Tower · Inside the 666 News Studio\nChapter 3. First Mission — 'Hell Broadcast'",
+        seq: [
+          {
+            type: 'text',
+            ko: "> 문이 열리자, 한층 더 강렬한 전파와 조명이 당신의 피부를 파고든다.\n> 그리고 어딘가에서 들려오는 관음적 웃음소리까지—\n> 방송으로만 보던 스튜디오를 이렇게 직접 마주하니—묘하게 감회가 새롭다.",
+            en: "> As the door opens, a surge of intense signals and light digs into your skin.\n> And somewhere in the distance, a voyeuristic laugh echoes—\n> a sound you’ve only ever heard through broadcasts.\n> Facing the studio in person for the first time… there’s something strangely overwhelming about it.",
+            media: { type: 'image', src: 'assets/studio_1.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "시청률? 지금부터 네 손에 달렸지.\n여긴 기회와 사고가 함께 춤추는 곳이야.\n네 선택 하나로—지옥 전체가 널 다시 보게 되겠지.",
+            en: "Ratings? From here on out, they’re in your hands.\nThis is where opportunity and disaster dance together.\nWith just one choice… all of Hell will start seeing you differently.",
+            media: { type: 'image', src: 'assets/studio_2-1.png' }
+          },
+          {
+            type: 'choice',
+            id: 'choice5',
+            flagKey: 'c5',
+            options: [
+              {
+                value: 1,
+                ko: "(1) 최대한 화려하게. 이름은 당신의 것으로 박아드리죠.",
+                en: "(1) Make it flashy. I’ll put your name all over the show.",
+                next: 'scene3_c1'
+              },
+              {
+                value: 2,
+                ko: "(2) 피해는 최소화합시다. 시청률만 올리면 되잖아요.",
+                en: "(2) Let’s keep the damage minimal. As long as the ratings go up, right?",
+                next: 'scene3_c2'
+              },
+              {
+                value: 3,
+                ko: "(3) 관객이 좋아할만한 표정, 하나 연출해뒀죠.",
+                en: "(3) I’ve already prepared a face the audience will love.",
+                next: 'scene3_c3'
+              },
+              {
+                value: 4,
+                ko: "(4) 그냥… 이 방송, 안 하면 안 되나요?",
+                en: "(4) Can’t I… just not do this broadcast?",
+                next: 'scene3_c4'
+              }
+            ]
+          }
+        ]
+      },
+
+      // Choice5-1 : 화려한 방송
+      scene3_c1: {
+        id: 'scene3_c1',
+        bg: 'assets/studio_2-1.png',
+        bgType: 'image',
+        bgm: 'scene3',
+        chapterKo: "",
+        chapterEn: "",
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 최대한 화려하게. 이름은 당신의 것으로 박아드리죠.`,
+            en: () => `> [Name] : Make it flashy. I’ll put your name all over the show.`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "하하! 이런 태도—좋아. 역시 나의 선택은 틀리지 않았어.",
+            en: "Haha! Now that’s the spirit.\nI knew my choice was the right one.",
+            media: { type: 'image', src: 'assets/studio_2-1.png' }
+          },
+          {
+            type: 'text',
+            ko: "> 복스가 가볍게 손짓하자, 스튜디오의 조명들이 일제히 당신을 향해 움직인다.\n> 무대 한가운데에 선 당신을 향해, 관객 없는 박수 소리만이 스피커에서 흘러나온다.",
+            en: "> With a light sweep of his hand, the studio lights pivot all at once, converging on you.\n> From the speakers, applause with no audience behind it spills into the room—a hollow ovation meant only for you.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'text',
+            ko: "> 당신은 조명을 정면으로 받으며 첫 번째 퍼포먼스를 시작한다.\n> 화면 구석의 시청률 게이지가 서서히 상승하기 시작했다.",
+            en: "> Bathed in the lights, you begin your very first performance.\n> In the corner of the screen, the ratings gauge starts to rise—slowly but surely."
+          },
+          {
+            type: 'jump',
+            next: 'scene4_stub'
+          }
+        ]
+      },
+
+      // Choice5-2 : 피해 최소화
+      scene3_c2: {
+        id: 'scene3_c2',
+        bg: 'assets/studio_2-1.png',
+        bgType: 'image',
+        bgm: 'scene3',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 피해는 최소화합시다. 시청률만 올리면 되잖아요.`,
+            en: () => `> [Name] : Let’s keep the damage minimal. As long as the ratings go up, right?`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "…피해를 최소화한다고?\n흠, 그런 건전한 마인드를 가진 악마를 보게 될 줄이야.",
+            en: "…Minimize the damage?\nHah. I didn’t expect to meet a demon with such… wholesome priorities.",
+            media: { type: 'image', src: 'assets/studio_2-1.png' }
+          },
+          {
+            type: 'text',
+            ko: "> 복스는 가볍게 웃으며 고개를 기울인다.\n> 그 웃음은 칭찬 같으면서도 조롱이 섞인, 묘하게 사람을 불편하게 만드는 표정이었다.",
+            en: "> Vox tilts his head with a soft laugh.\n> It’s a smile that feels like praise and mockery all at once—just unsettling enough to make your skin prickle."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "좋아. 하지만 기억해둬.\n지옥의 시청자들은 ‘안전한 방송’ 따윈 원하지 않아.\n조금은… 자극적이고, 과감해야 시선이 꽂히는 법이지.",
+            en: "Fine. But remember this.\nHell’s viewers don’t want \"safe broadcasting.\"\nThey want something a little… sharper. Bolder. Something that sticks in their eyes."
+          },
+          {
+            type: 'text',
+            ko: "> 복스는 당신의 어깨를 톡 치며 카메라 쪽으로 시선을 유도한다.\n> Vox : 그러니까 최소화는 하되—지루하게 만들 생각은 하지 마.\n> Vox : 네 방식이 어떤지… 지켜보도록 하지.",
+            en: "> He taps your shoulder lightly, guiding your attention toward the cameras.\n> Vox : So keep it minimal—sure.\n> Vox : But don’t you dare make it boring.\n> Vox : I’ll be watching to see how you pull it off."
+          },
+          {
+            type: 'text',
+            ko: "> 당신은 신중하면서도 충분히 자극적인 퍼포먼스를 준비하기 시작한다.",
+            en: "> And so, you begin preparing a performance that’s careful—but still provocative enough to capture every gaze.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'jump',
+            next: 'scene4_stub'
+          }
+        ]
+      },
+
+      // Choice5-3 : 표정 연출
+      scene3_c3: {
+        id: 'scene3_c3',
+        bg: 'assets/studio_2-1.png',
+        bgType: 'image',
+        bgm: 'scene3',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 관객이 좋아할만한 표정, 하나 연출해뒀죠.`,
+            en: () => `> [Name] : I’ve already prepared a face the audience will love.`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "…표정?\n흥. 그건 꽤 구식인데.\n…어쩌면 지옥에선 오히려 신선한 카드지.",
+            en: "…A face?\nHmph. That’s rather old-fashioned.\nThough… in Hell, that might actually count as a fresh trick.",
+            media: { type: 'image', src: 'assets/studio_2-1.png' }
+          },
+          {
+            type: 'text',
+            ko: "> 복스는 당신의 얼굴을 천천히 훑어본다.\n> 그 순간, 스튜디오 곳곳의 카메라가 일제히 각도를 조정하며 당신을 중심으로 포커스를 맞춘다.",
+            en: "> Vox lets his gaze slowly travel across your face.\n> At that moment, cameras all around the studio shift their angles at once, locking their focus squarely onto you."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "좋아. 시청자들은 ‘감정’이라는 미끼에 약하거든.\n그 표정… 제대로 살려봐.",
+            en: "Good. Viewers are weak to “emotion” as bait.\nSo that expression—make it count."
+          },
+          {
+            type: 'text',
+            ko: "> 조명이 당신의 얼굴을 강하게 비춘다.\n> 그리고 그 빛 아래서—당신의 첫 표정 연출이 천천히 시작된다.",
+            en: "> The lights flare brightly against your face,\n> and under that harsh glow, your first crafted expression begins to take shape.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'jump',
+            next: 'scene4_stub'
+          }
+        ]
+      },
+
+      // Choice5-4 : 방송 거부
+      scene3_c4: {
+        id: 'scene3_c4',
+        bg: 'assets/studio_2-2.png',
+        bgType: 'image',
+        bgm: 'scene3',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 그냥… 이 방송, 안 하면 안 되나요?`,
+            en: () => `> [Name] : Can’t I… just not do this broadcast?`
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "……뭐라고?",
+            en: "……Excuse me?",
+            media: { type: 'image', src: 'assets/studio_2-2.png' }
+          },
+          {
+            type: 'text',
+            ko: "> 복스의 눈빛이 단숨에 차갑게 식는다.",
+            en: "> Vox’s gaze goes cold in an instant."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "흥미롭군. 겉모습은 그럴싸했는데…\n속은 이렇게 성의가 없을 줄이야.",
+            en: "Interesting. You looked convincing on the outside…\nBut I didn’t expect your resolve to be this shallow."
+          },
+          {
+            type: 'text',
+            ko: "> 그의 말이 떨어지자마자,\n> 스튜디오의 카메라들이 일제히 당신에게 초점을 맞춘다.\n> 알 수 없는 압박감이 목덜미를 따라 서늘하게 내려온다.",
+            en: "> The moment his words fall,\n> every camera in the studio swings toward you at once.\n> A chill pressure crawls down the back of your neck—impossible to ignore."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "좋아. 그렇게 나오겠다면—\n네가 도망치고 싶을수록, 더 눈에 띄게 만들어주지.",
+            en: "Fine. If that’s how you want to play it—\nThe more you try to run, the more I’ll make you stand out."
+          },
+          {
+            type: 'text',
+            ko: "> 복스의 냉랭한 시선 아래, 당신은 억지로 방송 준비 위치로 밀려난다.\n> 스튜디오의 전파는 점점 더 거칠게 진동하기 시작했다.",
+            en: "> Under Vox’s icy stare, you’re pushed into position for the broadcast.\n> The studio’s signals begin to vibrate—rougher, harsher, rising around you.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'jump',
+            next: 'scene4_stub'
+          }
+        ]
+      },
+
+      // ───── Scene4 : 외부 세력 접촉 — 화이트 노이즈 ─────
+      scene4_stub: {
+        id: 'scene4_stub',
+        bg: 'assets/exterior_1.png',
+        bgType: 'image',
+        bgm: 'scene4',
+        chapterKo: "[장면4] 외부\nChapter 4. 외부 세력 접촉 — 화이트 노이즈",
+        chapterEn: "[Scene4] Exterior\nChapter 4. Contact with Outside Forces — White Noise",
+        seq: [
+          {
+            type: 'text',
+            ko: "> 방송을 마치고 스튜디오 밖으로 나오자, 지옥의 거리는 한층 더 짙은 어둠을 품은 채 흔들리고 있었다.",
+            en: "> After finishing the broadcast and stepping out of the studio,\n> the streets of Hell tremble under an even deeper shade of darkness.",
+            media: { type: 'image', src: 'assets/exterior_1.png' }
+          },
+          {
+            type: 'text',
+            ko: "> 바로 그때—허공에 조용한 하얀 빛이 서서히 스며들기 시작한다.",
+            en: "> And then—a quiet white light begins to seep into the air.",
+            media: { type: 'image', src: 'assets/exterior_2.png' }
+          },
+          {
+            type: 'text',
+            ko: "> 빛은 점점 형태를 갖추더니, 긴 창을 든 엑소시스트의 실루엣으로 완성된다.\n> 지옥에서는 결코 볼 수 없는 존재였지만, 그 이질감이 오히려 더 위협적으로 느껴졌다.",
+            en: "> The light slowly takes form, solidifying into the silhouette of an exorcist holding a long spear.\n> A being that should never exist in Hell—yet that very impossibility makes its presence all the more threatening."
+          },
+          {
+            type: 'text',
+            speakerKo: "??",
+            speakerEn: "??",
+            ko: "복스가 천국을 위협하고 있다는 건 알고 있지?\n너도… 좋아서 그의 밑에서 일하는 건 아니라고 봐.",
+            en: "You’re aware that Vox is becoming a danger to Heaven, aren’t you?\nAnd you… I doubt you’re working under him because you truly want to."
+          },
+          {
+            type: 'text',
+            speakerKo: "??",
+            speakerEn: "??",
+            ko: "되돌릴 기회를 주겠다.\n천국에 협력해라. 그러면 그에게서… 완전히 벗어나게 해주지.",
+            en: "I’ll give you a chance to turn things around.\nCooperate with Heaven—and I’ll free you from him completely."
+          },
+          {
+            type: 'choice',
+            id: 'choice6',
+            flagKey: 'c6',
+            options: [
+              {
+                value: 1,
+                ko: "(1) …정말 저를 '구원'할 수 있다는 건가요?",
+                en: "(1) …You’re saying you can actually redeem me?",
+                next: 'scene4_c1'
+              },
+              {
+                value: 2,
+                ko: "(2) (*복스에게 즉시 메시지를 전송*) 「위험, 천사 접촉.」",
+                en: "(2) (*send an immediate message to Vox*) 「Warning. Angel contact detected.」",
+                next: 'scene4_c2'
+              },
+              {
+                value: 3,
+                ko: "(3) 양쪽 다 관심 없어요. 제 일이나 하죠.",
+                en: "(3) I’m not interested in either side. I’ll stick to my own job.",
+                next: 'scene4_c3'
+              },
+              {
+                value: 4,
+                ko: "(4) …복스에게서 벗어날 수 있다면, 당신 제안을 받아들이죠.",
+                en: "(4) …If it means getting away from Vox, then I’ll accept your offer.",
+                next: 'scene4_c4'
+              }
+            ]
+          }
+        ]
+      },
+
+      // Choice6-1 : 구원?
+      scene4_c1: {
+        id: 'scene4_c1',
+        bg: 'assets/exterior_2.png',
+        bgType: 'image',
+        bgm: 'scene4',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : …정말 저를 '구원'할 수 있다는 건가요?`,
+            en: () => `> [Name] : …You’re saying you can actually redeem me?`
+          },
+          {
+            type: 'text',
+            speakerKo: "??",
+            speakerEn: "??",
+            ko: "구원… 그 단어를 네 입에서 듣게 될 줄은 몰랐군.",
+            en: "Redeem… I didn’t expect to hear that word from you.",
+            media: { type: 'image', src: 'assets/exterior_2.png' }
+          },
+          {
+            type: 'text',
+            ko: "> 엑소시스트의 창끝에서 흰 파장이 한 번 일렁인다.\n> 그는 잠시 당신을 관찰하듯 바라보다가, 조용히 고개를 끄덕인다.",
+            en: "> A pale ripple trembles at the tip of the exorcist’s spear.\n> He studies you for a moment—quiet, assessing—then gives you a small, deliberate nod."
+          },
+          {
+            type: 'text',
+            speakerKo: "??",
+            speakerEn: "??",
+            ko: "좋아. 네가 협력한다면—나도 마찬가지로 협력하지.",
+            en: "Very well. If you’re willing to cooperate… then so will I."
+          },
+          {
+            type: 'text',
+            ko: "> 당신은 그가 들려줄 말들을 조금 더 들어보기로 한다.",
+            en: "> You decide to hear him out a little longer.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'jump',
+            next: 'scene5_branch'
+          }
+        ]
+      },
+
+      // Choice6-2 : 복스에게 제보
+      scene4_c2: {
+        id: 'scene4_c2',
+        bg: 'assets/exterior_2.png',
+        bgType: 'image',
+        bgm: 'scene4',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : (*복스에게 즉시 메시지를 전송*) 「위험, 천사 접촉.」`,
+            en: () => `> [Name] : (*send an immediate message to Vox*) 「Warning. Angel contact detected.」`
+          },
+          {
+            type: 'text',
+            speakerKo: "??",
+            speakerEn: "??",
+            ko: "…그게 네 선택인가?",
+            en: "…That’s your choice?",
+            media: { type: 'image', src: 'assets/exterior_2.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "??",
+            speakerEn: "??",
+            ko: "역시 지옥의 것들은 믿을 게 못 되는군.\n시간만 낭비했어.",
+            en: "Just as I thought—Hell’s creatures can’t be trusted.\nI’ve wasted my time."
+          },
+          {
+            type: 'text',
+            ko: "> 당신은 복스를 위해 천사의 정보를 조용히 전송하기 시작한다.",
+            en: "> You quietly begin transmitting information about the angel to Vox.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'jump',
+            next: 'scene5_branch'
+          }
+        ]
+      },
+
+      // Choice6-3 : 독립 선언
+      scene4_c3: {
+        id: 'scene4_c3',
+        bg: 'assets/exterior_2.png',
+        bgType: 'image',
+        bgm: 'scene4',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 양쪽 다 관심 없어요. 제 일이나 하죠.`,
+            en: () => `> [Name] : I’m not interested in either side. I’ll stick to my own job.`
+          },
+          {
+            type: 'text',
+            speakerKo: "??",
+            speakerEn: "??",
+            ko: "의외군. 지옥도, 천국도 아닌 길을 택하다니.",
+            en: "Unexpected.\nChoosing a path that belongs to neither Hell nor Heaven…",
+            media: { type: 'image', src: 'assets/exterior_2.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "??",
+            speakerEn: "??",
+            ko: "하지만 기억해라.\n독립은 곧… 어느 쪽의 보호도 받지 못한다는 뜻이다.",
+            en: "But remember this.\nIndependence means… no protection from either side."
+          },
+          {
+            type: 'text',
+            ko: "> 그 말을 남기고, 엑소시스트의 모습은 하얀 빛과 함께 빠르게 시야에서 사라졌다.\n> 당신은 결국 어떤 세력에도 속하지 않은 채, 조용히 어둠 속으로 발걸음을 옮겼다.",
+            en: "> Leaving those words behind, the exorcist dissolves from sight in a swift burst of white light.\n> And so, belonging to no faction at all, you step quietly into the darkness.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'jump',
+            next: 'scene5_branch'
+          }
+        ]
+      },
+
+      // Choice6-4 : 복스 탈주 루트
+      scene4_c4: {
+        id: 'scene4_c4',
+        bg: 'assets/exterior_2.png',
+        bgType: 'image',
+        bgm: 'scene4',
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : …복스에게서 벗어날 수 있다면, 당신 제안을 받아들이죠.`,
+            en: () => `> [Name] : …If it means getting away from Vox, then I’ll accept your offer.`
+          },
+          // ...(중략)...
+          {
+            type: 'text',
+            ko: "> 당신은 조용히 그의 뒤를 따라 걸음을 옮긴다.\n> 지금까지와는 전혀 다른 길로—첫 발을 내딛으며.",
+            en: "> You follow after him in silence—\n> taking your first step onto a path completely unlike the one before.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'jump',
+            next: 'scene5_branch'
+          }
+        ]
+      },
+
+      // ───── Scene5 : 최종 분기 ─────
+      scene5_branch: {
+        id: 'scene5_branch',
+        bg: 'assets/war_2.png',
+        bgType: 'image',
+        bgm: 'scene5',
+        chapterKo: "[장면5] 펜타그램 시티 — Chapter 5. 최종장 — 엔딩 분기점",
+        chapterEn: "[Scene5] Pentagram City — Chapter 5. Final Chapter — Ending Branch Point",
+        seq: [
+          {
+            type: 'text',
+            ko: "> 지옥 전역이 흔들리고 있었다.\n> 하늘을 뒤덮은 불길과 파편, 끊어진 신호들이 뒤엉켜 거대한 소음을 만들어낸다.\n> 전쟁은 서서히, 그러나 확실히 막바지를 향해 가고 있었다.",
+            en: "> All of Hell was shaking.\n> Flames, shattered debris, and broken signals churned together,\n> forming a massive, deafening roar across the sky.\n> The war was slowly—yet unmistakably—reaching its end."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "…정해.\n넌 누구 편이지?",
+            en: "…Choose.\nWhose side are you on?"
+          },
+          {
+            type: 'text',
+            ko: "> 이제 더는 선택지가 없다.\n> 당신이 지금까지 걸어온 모든 길이—\n> 바로 이 순간, 하나의 엔딩으로 수렴된다.",
+            en: "> There are no more choices.\n> Every path you’ve walked—\n> all of them converge, right here, into a single ending."
+          },
+          {
+            type: 'jump',
+            next: 'compute_ending'
+          }
+        ]
+      },
+
+      // 더미 씬: 여기서 플래그에 따라 실제 엔딩 씬으로 점프
+      compute_ending: {
+        id: 'compute_ending',
+        bg: 'assets/war_2.png',
+        bgType: 'image',
+        bgm: 'scene5',
+        seq: [
+          {
+            type: 'ending-compute'
+          }
+        ]
+      },
+
+      // ───── 엔딩들 (1~4) — 여기서는 간략 버전 + 에필로그 제목만 ─────
+      ending1_conquest: {
+        id: 'ending1_conquest',
+        bg: 'assets/war_2.png',
+        bgType: 'image',
+        bgm: 'scene5',
+        chapterKo: "■ END 1. 정복 파트너",
+        chapterEn: "■ END 1. Conquest Partner",
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 어쩔 수 없죠.\n> [이름] : 당신은… 제가 없으면 안 되나 봅니다.`,
+            en: () => `> [Name] : I suppose… there’s no helping it.\n> [Name] : Seems you really can’t go on without me, can you?`,
+            media: { type: 'image', src: 'assets/war_2.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 당신은 손을 내밀었다.\n> 복스의 화면이 미약하게 흔들리다가,\n> 천천히—마침내 미소를 되찾는다.",
+            en: "> You reach out your hand.\n> Vox’s screen flickers weakly—\n> then slowly, finally, regains its grin."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "그래.\n이게… 우리가 맺은 계약이지.",
+            en: "Yes.\nThis is the contract we made… you and I."
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 당신의 손을 잡고 일어선 복스는,\n> 부상 따위 대수롭지 않다는 듯 다시금 어깨를 펴고 전장을 향해 고개를 들었다.\n> 그 기세는 여전히 강렬했고, 그 자신감은 건재했다.",
+            en: "> Taking your hand, Vox rises to his feet.\n> He squares his shoulders again,\n> as if the wounds on his body were nothing more than an inconvenience,\n> and lifts his gaze toward the battlefield."
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 그리고 당신 역시—\n> 복스의 결의를 이어받아, 마지막 전투 속으로 함께 나아간다.",
+            en: "> And you, too—\n> carrying the same resolve as Vox, step forward with him into the final battle."
+          },
+
+          // 에필로그 (검은 화면 위)
+          {
+            type: 'text',
+            ko: "✔ EN 에필로그 — 정복 파트너",
+            en: "✔ EN Epilogue — Conquest Partner",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "전쟁이 끝난 뒤, 지옥은 빠르게 재정비되었다.\n무너진 건물과 깨진 스크린 너머에서 복스는 다시 왕좌를 세웠고,\n그의 곁에는 언제나 당신이 있었다.",
+            en: "After the war ended, Hell recovered with remarkable speed.\nAmid the ruins and shattered screens, Vox rebuilt his throne—\nand you were always there at his side."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "당신이 손을 대는 일마다 질서가 잡히고 효율이 생겨났으며,\n복스의 과감함은 당신의 추진력과 결합해\n새로운 형태의 ‘정복’을 만들어냈다.",
+            en: "Everything you touched brought order, efficiency,\nand a clear structure back into the chaos.\nVox’s boldness, paired with your relentless drive,\nforged a new kind of conquest unlike anything Hell had seen before."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "지옥의 전파망은 어느 때보다 안정적으로 확장되었고,\n모두가 알고 있었다—\n이제 복스는 더 이상 혼자가 아니며,\n그의 가장 확실한 오른팔은 바로 당신이라는 사실을.",
+            en: "Hell’s signal network expanded more steadily than ever,\nand everyone knew—\nVox was no longer ruling alone.\nHis most reliable right hand,\nhis surest partner in domination—\nwas you."
+          },
+
+          // 마지막: 엔딩 처리(END 카드, localStorage 처리 등은 엔진에서)
+          {
+            type: 'ending',
+            endingIndex: 1
+          }
+        ]
+      },
+
+      ending2_overthrow: {
+        id: 'ending2_overthrow',
+        bg: 'assets/war_2.png',
+        bgType: 'image',
+        bgm: 'scene5',
+        chapterKo: "■ END 2. 역전 지배",
+        chapterEn: "■ END 2. Overthrow",
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 이제… 내 계획을 따를 차례야, 복스.`,
+            en: () => `> [Name] : Now… it’s your turn to follow my plan, Vox.`,
+            media: { type: 'image', src: 'assets/war_2.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 복스의 눈빛이 순간 흔들린다.\n> 그러나 이미 그의 몸은 산산이 부서져 저항할 힘조차 남아 있지 않았다.",
+            en: "> Vox’s eyes flicker for an instant.\n> But his body—broken beyond repair—has no strength left to resist."
+          },
+          {
+            type: 'text',
+            ko: () => `> [이름] : 살고 싶다면 나와 계약해.\n> [이름] : 그러면 이 전쟁에서—'우리'가 승리하게 해주지.`,
+            en: () => `> [Name] : If you want to live, make a contract with me.\n> [Name] : Do that, and 'we' will win this war.`
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 당신은 순응하라는 의미로 조용히 손을 내밀었다.\n> 복스는 잠시 숨을 삼키며 고개를 떨군다.\n> 이제 더 이상 판도를 뒤집을 가망이 없다는 사실을 깨달은 것이다.",
+            en: "> You extend your hand, quiet and commanding—\n> a gesture of submission, not mercy.\n> Vox swallows hard and lowers his head,\n> finally realizing there is no way left for him to overturn the outcome."
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 결국 그는 절망 섞인 눈으로 당신의 손을 붙잡는다.",
+            en: "> At last, with a look of despair, he takes your hand."
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 그 순간, 새로운 계약의 사슬이 복스의 목을 조여 들고\n> 당신의 의지에 따라 그의 몸이 천천히 일으켜 세워진다.",
+            en: "> In that moment, the chains of a new contract coil around Vox’s neck, tightening—\n> and under your will, his ruined body is slowly lifted back onto its feet."
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: " <span style=\"font-size:1.55em; font-weight:900; letter-spacing:3px;\">——그래… 이 승리는 '나의 것'이다.</span>",
+            en: " <span style=\"font-size:1.55em; font-weight:900; letter-spacing:3px;\">——Yes… this victory belongs to me.</span>"
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 전쟁의 결말은 모두의 예상에서 벗어났다.\n> 그리고 이제—\n> 모든 것을 지배하는 자는 당신이었다.",
+            en: "> The war’s ending defied everyone’s expectations.\n> And now—\n> the one who holds dominion over everything… is you."
+          },
+
+          // 에필로그
+          {
+            type: 'text',
+            ko: "✔ EN 에필로그 — 역전 지배",
+            en: "✔ EN Epilogue — Overthrow",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "당신의 통치 아래, 지옥의 질서는 완전히 재편되었다.\n복스는 한때의 영광을 잃고,\n이제는 당신의 뒤를 조용히 따르는—그저 하나의 부속품 같은 존재로 남았다.",
+            en: "Under your rule, the order of Hell was reshaped entirely.\nVox, stripped of his former glory,\nnow followed quietly behind you—\nlittle more than an accessory to your reign."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "하지만 그는 결코 반항하지 않았다.\n당신에게 굴복하는 이 현실이야말로\n살아남기 위한 최선이라는 사실을 누구보다 잘 알고 있었기 때문이다.",
+            en: "Yet he never resisted.\nHe understood better than anyone that yielding to you\nwas the only way left for him to survive."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "지옥의 군세는 새로운 왕을 맞이했다.\n모두가 당신의 말에 귀를 기울였고,\n당신이 고개만 살짝 움직여도 수천 개의 시선이 동시에 반응했다.",
+            en: "Hell’s legions welcomed a new sovereign.\nEvery demon hung on your every word,\nand with the slightest tilt of your head,\nthousands of eyes shifted in unison."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "패배자가 복스라면—승자는 단 하나였다.\n지옥의 지배권은 이제 당신의 것이었다.",
+            en: "If Vox was the defeated—\nthere was only one true victor.\nThe dominion of Hell now belonged to you."
+          },
+
+          {
+            type: 'ending',
+            endingIndex: 2
+          }
+        ]
+      },
+
+      ending3_betrayer: {
+        id: 'ending3_betrayer',
+        bg: 'assets/war_2.png',
+        bgType: 'image',
+        bgm: 'scene5',
+        chapterKo: "■ END 3. 배신자",
+        chapterEn: "■ END 3. The Betrayer",
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 아무도 전쟁을 원치 않았습니다.\n> [이름] : 모두들… 너무 멀리 갔어요.`,
+            en: () => `> [Name] : No one ever wanted this war.\n> [Name] : Everyone… went too far.`,
+            media: { type: 'image', src: 'assets/war_2.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 복스는 일어서려는 듯 비틀거리며 당신을 올려다본다.\n> 전장의 불길과 잿빛 연기 속에서도 그의 표정은 거의 무표정에 가까웠다.",
+            en: "> Vox staggers, as if trying to rise, and looks up at you.\n> Even through the flames and drifting ash of the battlefield,\n> his expression is almost empty."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "……그래.\n네가 그 말을 하게 될 줄은 알았다.\n마지막까지 널 믿지 않은 건… 정답이었어.",
+            en: "……I see.\nI knew you’d say something like that.\nNot trusting you until the very end… was the right choice after all."
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 당신은 복스도, 천사도—그 누구의 편도 선택하지 않는다.\n> 그저 전쟁의 중심에서 조용히 등을 돌린다.",
+            en: "> You choose neither Vox nor the angels—no side at all.\n> You simply turn your back on the heart of the war, and walk away."
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 그리고 혼자 걸어 나오는 당신의 뒤로\n> 잿더미만이 천천히 가라앉는다.\n> 아무것도 선택하지 않은 자가 남기는, 유일한 흔적이었다.",
+            en: "> Behind you,\n> only ash settles slowly to the ground.\n> The sole trace left behind by someone who chose… nothing.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+
+          // 에필로그
+          {
+            type: 'text',
+            ko: "✔ EN 에필로그 — 배신자",
+            en: "✔ EN Epilogue — The Betrayer",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "전쟁의 잔해는 오래도록 사라지지 않았다.\n지옥도, 천국도 서로를 경계한 채\n조용한 침묵 속에서 겨우 균형을 유지하고 있었다.",
+            en: "The remnants of the war lingered for a long time.\nHell and Heaven watched each other warily,\nmaintaining a fragile balance in a tense, uneasy silence."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "당신은 그 어느 쪽에도 속하지 않은 채\n홀로 길을 걸었다.",
+            en: "You walked alone,\nbelonging to neither side."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "누군가는 당신을 배신자라 불렀고,\n누군가는 균형을 무너뜨린 자라 비난했다.\n그러나 또 누군가는—\n전쟁을 막을 수 있었던 유일한 존재라며 조용히 속삭였다.",
+            en: "Some called you a betrayer.\nOthers condemned you as the one who disrupted the balance.\nYet there were those who whispered—quietly—\nthat you were the only one who could have stopped the war."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "이름은 남지 않았지만,\n당신이 지나간 자리에선 바람과 재만이 흩날렸다.\n그리고 그 재 위에서—\n아무도 모르게, 새로운 길이 열리고 있었다.",
+            en: "Your name was never recorded,\nbut in the places you passed,\nonly wind and drifting ash remained.\nAnd upon that ash—\nunnoticed by anyone—\na new path was beginning to open."
+          },
+
+          {
+            type: 'ending',
+            endingIndex: 3
+          }
+        ]
+      },
+
+      ending4_zombie: {
+        id: 'ending4_zombie',
+        bg: 'assets/war_2.png',
+        bgType: 'image',
+        bgm: 'scene5',
+        chapterKo: "■ END 4. 좀비 인턴",
+        chapterEn: "■ END 4. Zombie Intern",
+        seq: [
+          {
+            type: 'text',
+            ko: () => `> [이름] : 전 이만 빠질래요.`,
+            en: () => `> [Name] : I’m… just gonna clock out now.`,
+            media: { type: 'image', src: 'assets/war_2.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 복스는 한쪽 눈을 꿈뻑이며 멍하니 당신을 바라본다.",
+            en: "> Vox blinks once, slowly, staring at you in utter disbelief."
+          },
+          {
+            type: 'text',
+            speakerKo: "Vox",
+            speakerEn: "Vox",
+            ko: "……뭐?",
+            en: "……What?"
+          },
+          {
+            type: 'text',
+            speakerKo: "Narration",
+            speakerEn: "Narration",
+            ko: "> 당신은 전쟁도, 선택도, 그 어떤 길도 택하지 않았다.\n> 그저 반쯤 넋이 나간 얼굴로 피투성인 거리를 휘청이며 벗어날 뿐이다.",
+            en: "> You choose no side—\n> not the war, not Vox, not the angels, not anything.\n> With a half-vacant expression, you simply stumble out of the blood-soaked streets,\n> as if sleepwalking your way off the battlefield.",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+
+          // 에필로그
+          {
+            type: 'text',
+            ko: "✔ EN 에필로그 — 좀비 인턴",
+            en: "✔ EN Epilogue — Zombie Intern",
+            media: { type: 'image', src: 'assets/black.png' }
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "전쟁은 끝났지만, 당신의 기억은 흐릿했다.\n몸은 멀쩡히 움직였고,\n가끔은 복스에게 부려 먹히기도 했으며,\n또 가끔은 천사에게 쫓기기도 했다.",
+            en: "The war had ended, but your memories remained foggy.\nYour body moved just fine—\nsometimes doing grunt work for Vox,\nother times getting chased by angels."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "하지만 시간이 지나도\n당신은 그때의 판단이나 목적을 떠올릴 수 없었다.\n남아 있는 건 단 하나—\n\"일해야 한다\"는 막연한 감각뿐이었다.",
+            en: "But no matter how much time passed,\nyou could never recall your intentions\nor the reason behind your choices back then.\nOnly one thing lingered:\nA vague, persistent feeling that you… had work to do."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "그래서 당신은 매일 조금씩 무언가를 옮기고, 치우고, 메모하며\n끝도 없는 업무 루틴을 반복했다.",
+            en: "So each day, you carried things, cleaned things, wrote notes,\nrepeating an endless cycle of tasks without question."
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "지옥의 누군가가 말했다.\n\"하나 떠돌아다니는 인턴이 있다더라.\"\n\"죽지도 않고, 쉬지도 않는다던데…\"",
+            en: "Somewhere in Hell, rumors began to spread:\n\"There’s an intern wandering around.\"\n\"They say it never dies… and it never takes a break.\""
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "그리고 어느 날—\n폐허가 된 도시의 한 구석에서\n당신은 문득 멈춰 서서 중얼거렸다.\n\n\"…근데, 내가… 누구 밑에서 일하던 거였지?\"",
+            en: "And then one day—\nin a ruined corner of the city—\nyou suddenly stopped and muttered to yourself:\n\n\"…Wait. Who… was I working for again?\""
+          },
+          {
+            type: 'text',
+            speakerKo: "Epilogue",
+            speakerEn: "Epilogue",
+            ko: "대답해주는 이는 아무도 없었다.",
+            en: "There was no one left to answer."
+          },
+
+          {
+            type: 'ending',
+            endingIndex: 4
+          }
+        ]
+      }
+  };
+    // ─────────────────────────────────
+    // 엔딩 이름/설명 (ENDING DATABASE용)
+    // ─────────────────────────────────
+    const endingMeta = [
+      {
+        code: 'END 0',
+        img: 'assets/(1)Calibration_Suite_door.png',
+        titleKo: '승인거절',
+        descKo: '승인거절 :: 응답 불필요. 다음 절차로 이동합니다.',
+        titleEn: 'Rejection',
+        descEn: 'Rejection :: No response required. Proceeding to the next protocol.'
+      },
+      {
+        code: 'END 1',
+        img: 'assets/mmm111.jpg',
+        titleKo: '정복 파트너',
+        descKo: '지옥·천국 리부트, 비즈니스는 언제나 효율적이어야 합니다.',
+        titleEn: 'Conquest Partner',
+        descEn: 'Hell and Heaven rebooted. Business must always stay efficient.'
+      },
+      {
+        code: 'END 2',
+        img: 'assets/mmm111.jpg',
+        titleKo: '역전 지배',
+        descKo: '복스. 이제 알겠지? 이 판도, 너도—모두 내 손바닥 위야.',
+        titleEn: 'Overthrow',
+        descEn: 'Vox. Now you see it, don’t you? This whole game—including you—has been in the palm of my hand.'
+      },
+      {
+        code: 'END 3',
+        img: 'assets/mmm111.jpg',
+        titleKo: '배신자',
+        descKo: '저는 평화를 위해 행동했을 뿐입니다.',
+        titleEn: 'The Betrayer',
+        descEn: 'Everything I did… was for peace.'
+      },
+      {
+        code: 'END 4',
+        img: 'assets/mmm111.jpg',
+        titleKo: '좀비 인턴',
+        descKo: '왜 일이 안 끝나죠? 야근은 싫습니다.',
+        titleEn: 'Zombie Intern',
+        descEn: 'Why isn’t the work finished yet? I really don’t want overtime…'
+      }
+    ];
+
+    // ─────────────────────────────────
+    // UI Helpers
+    // ─────────────────────────────────
+    const $ = sel => document.querySelector(sel);
+
+    const bgLayer = $('#bg-layer');
+    const storyLayer = $('#story-layer');
+    const mainMenu = $('#main-menu');
+    const endingPanel = $('#ending-panel');
+    const creditsPanel = $('#credits-panel');
+    const settingsPanel = $('#settings-panel');
+    const chapterLabel = $('#chapter-label');
+    const speakerLabel = $('#speaker-label');
+    const dialogueText = $('#dialogue-text');
+    const nextIndicator = $('#next-indicator');
+    const choiceBox = $('#choice-box');
+    const clickLayer = $('#click-layer');
+
+    function setBg(scene) {
+      bgLayer.innerHTML = '';
+      if (!scene || !scene.bg) return;
+      if (scene.bgType === 'video') {
+        const v = document.createElement('video');
+        v.src = scene.bg;
+        v.autoplay = true;
+        v.loop = true;
+        v.muted = true;
+        v.playsInline = true;
+        v.classList.add('bg-active');
+        bgLayer.appendChild(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = scene.bg;
+        img.alt = '';
+        img.classList.add('bg-active');
+        bgLayer.appendChild(img);
+      }
+    }
+
+    function localizeText(block) {
+      const lang = state.lang;
+      // 함수형 텍스트 지원 (playerName 들어가는 곳)
+      const raw = (lang === 'ko' ? block.ko : block.en) || block.ko || block.en || '';
+      if (typeof raw === 'function') return raw();
+      return raw;
+    }
+
+    function setChapter(scene) {
+      if (!scene) {
+        chapterLabel.textContent = '';
+        return;
+      }
+      const label = state.lang === 'ko' ? scene.chapterKo : scene.chapterEn;
+      chapterLabel.innerHTML = label || '';
+    }
+
+    function clearAutoTimer() {
+      if (state.autoTimer) {
+        clearTimeout(state.autoTimer);
+        state.autoTimer = null;
+      }
+    }
+
+    function showChoice(block) {
+      choiceBox.innerHTML = '';
+      choiceBox.style.display = 'flex';
+      nextIndicator.style.opacity = 0;
+      block.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-button';
+        const text = state.lang === 'ko' ? opt.ko : opt.en;
+        btn.innerHTML = text;
+        btn.addEventListener('click', () => {
+          // 이름 입력이 필요한 선택지
+          if (block.promptName) {
+            const placeholder = state.lang === 'ko' ? '이름을 입력하세요.' : 'Please enter your name.';
+            const result = prompt(placeholder, state.playerName || '');
+            if (result && result.trim()) {
+              state.playerName = result.trim();
+            }
+          }
+          if (block.flagKey) {
+            state.flags[block.flagKey] = opt.value;
+          }
+          loadScene(opt.next);
+        });
+        choiceBox.appendChild(btn);
+      });
+    }
+
+    function showLine(block) {
+      choiceBox.style.display = 'none';
+      clearAutoTimer();
+      // 배경 교체가 필요하면
+      if (block.media) {
+        const tempScene = { bg: block.media.src, bgType: block.media.type === 'video' ? 'video' : 'image' };
+        setBg(tempScene);
+      }
+
+      const speaker = state.lang === 'ko' ? block.speakerKo : block.speakerEn;
+      speakerLabel.innerHTML = speaker || '';
+
+      const text = localizeText(block);
+      dialogueText.innerHTML = text;
+      nextIndicator.style.opacity = 1;
+
+      // 3초 뒤 자동 다음 라인
+      state.autoTimer = setTimeout(() => {
+        advanceSequence();
+      }, 3000);
+    }
+
+    function computeEndingIdFromFlags() {
+      const { c3, c4, c5, c6 } = state.flags;
+      // 규칙:
+      // 정복 파트너 : c3=2 / c4=3 / c5=2 / c6=2 or 3
+      if (c3 === 2 && c4 === 3 && c5 === 2 && (c6 === 2 || c6 === 3)) {
+        return 1;
+      }
+      // 역전 지배 : c3=2 / c4=2 / c5=3 / c6=1
+      if (c3 === 2 && c4 === 2 && c5 === 3 && c6 === 1) {
+        return 2;
+      }
+      // 배신자 : c3=3 or 4 / c4=4 or 2 / c5=4 / c6=4
+      if ((c3 === 3 || c3 === 4) && (c4 === 4 || c4 === 2) && c5 === 4 && c6 === 4) {
+        return 3;
+      }
+      // 그 외 : 좀비 인턴
+      return 4;
+    }
+
+    function handleSpecialBlock(block) {
+      if (block.type === 'jump') {
+        loadScene(block.next);
+        return true;
+      }
+      if (block.type === 'ending-compute') {
+        const id = computeEndingIdFromFlags();
+        const map = {
+          1: 'ending1_conquest',
+          2: 'ending2_overthrow',
+          3: 'ending3_betrayer',
+          4: 'ending4_zombie'
+        };
+        loadScene(map[id]);
+        return true;
+      }
+      if (block.type === 'ending') {
+        const idx = block.endingIndex;
+        if (idx >= 0 && idx < state.endingSeen.length) {
+          state.endingSeen[idx] = true;
+          saveEndings();
+        }
+        // 엔딩 출력이 끝난 뒤, 자동으로 Ending DB 화면 or 메인 메뉴로
+        state.autoTimer = setTimeout(() => {
+          showEndingDatabase();
+        }, 2500);
+        return true;
+      }
+      return false;
+    }
+
+    function advanceSequence() {
+      clearAutoTimer();
+      if (!state.currentSeq) return;
+      const seq = state.currentSeq;
+      if (state.currentIndex >= seq.length) {
+        // 더 이상 진행할 블록이 없으면 다음 행동 없음
+        nextIndicator.style.opacity = 0;
+        return;
+      }
+
+      const block = seq[state.currentIndex++];
+      // 특수 타입 처리
+      if (handleSpecialBlock(block)) return;
+
+      if (block.type === 'text') {
+        showLine(block);
+      } else if (block.type === 'choice') {
+        showChoice(block);
+      } else {
+        // 알 수 없는 타입 → 다음으로
+        advanceSequence();
+      }
+    }
+
+    function loadScene(id) {
+      if (!id) return;
+      const scene = scenes[id];
+      if (!scene) {
+        console.warn('Scene not found:', id);
+        return;
+      }
+      state.currentSceneId = id;
+      state.currentIndex = 0;
+      state.currentSeq = scene.seq || [];
+      clearAutoTimer();
+
+      setBg(scene);
+      setChapter(scene);
+
+      // BGM
+      if (scene.bgm) playBgm(scene.bgm);
+
+      // 메인 메뉴 / 스토리 layer 전환
+      if (id === 'mainMenu') {
+        storyLayer.style.display = 'none';
+        mainMenu.style.display = 'flex';
+      } else {
+        mainMenu.style.display = 'none';
+        storyLayer.style.display = 'block';
+      }
+
+      // 첫 블록 실행
+      if (state.currentSeq && state.currentSeq.length > 0) {
+        advanceSequence();
+      } else {
+        dialogueText.textContent = '';
+        speakerLabel.textContent = '';
+      }
+    }
+
+    // ─────────────────────────────────
+    // ENDING DATABASE / CREDITS / SETTINGS
+    // ─────────────────────────────────
+
+    function refreshEndingGrid() {
+      const grid = $('#ending-grid');
+      grid.innerHTML = '';
+      endingMeta.forEach((meta, idx) => {
+        const card = document.createElement('div');
+        card.className = 'ending-card';
+
+        const seen = state.endingSeen[idx];
+
+        const img = document.createElement('img');
+        img.src = seen ? meta.img : 'assets/black.png';
+        card.appendChild(img);
+
+        const code = document.createElement('div');
+        code.className = 'ending-code';
+        code.textContent = meta.code;
+        card.appendChild(code);
+
+        const title = document.createElement('div');
+        title.className = 'ending-title';
+        title.textContent = seen
+          ? (state.lang === 'ko' ? meta.titleKo : meta.titleEn)
+          : '???';
+        card.appendChild(title);
+
+        const desc = document.createElement('div');
+        desc.className = 'ending-desc';
+        desc.textContent = seen
+          ? (state.lang === 'ko' ? meta.descKo : meta.descEn)
+          : (state.lang === 'ko' ? '아직 해금되지 않은 엔딩입니다.' : 'This ending has not been unlocked yet.');
+        card.appendChild(desc);
+
+        grid.appendChild(card);
+      });
+    }
+
+    function showPanel(panel) {
+      mainMenu.style.display = 'none';
+      storyLayer.style.display = 'none';
+      panel.style.display = 'block';
+    }
+
+    function closePanel(panel) {
+      panel.style.display = 'none';
+      mainMenu.style.display = 'flex';
+    }
+
+    function showEndingDatabase() {
+      refreshEndingGrid();
+      showPanel(endingPanel);
+    }
+
+    function renderCredits() {
+      const body = $('#credits-body');
+      body.innerHTML = '';
+
+      const t = state.lang === 'ko' ? {
+        creator: "────── CREATOR UNIT ──────\n🕶Director · V-Sync\n🎨Illustrator · @EYE215 & V-Sync\n🎛️Sound / Music · V-Sync\n",
+        testers: "───── SYSTEM TEST UNIT ─────\n📡Velvette\n📡Dockggang\n📡애아빠\n📡Princess of Hell\n📡Blitzø"
+      } : {
+        creator: "────── CREATOR UNIT ──────\n🕶Director · V-Sync\n🎨Illustrator · @EYE215 & V-Sync\n🎛️Sound / Music · V-Sync\n",
+        testers: "───── SYSTEM TEST UNIT ─────\n📡Velvette\n📡Dockggang\n📡Aeappa\n📡Princess of Hell\n📡Blitzø"
+      };
+
+      const b1 = document.createElement('div');
+      b1.className = 'credits-block';
+      b1.textContent = t.creator;
+      body.appendChild(b1);
+
+      const b2 = document.createElement('div');
+      b2.className = 'credits-block';
+      b2.textContent = t.testers;
+      body.appendChild(b2);
+    }
+
+    function renderSettingsPanel() {
+      // language chips
+      document.querySelectorAll('.settings-chip[data-setting="lang"]').forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.value === state.lang);
+      });
+      // auto sound
+      document.querySelectorAll('.settings-chip[data-setting="autoSound"]').forEach(chip => {
+        const val = chip.dataset.value === 'on';
+        chip.classList.toggle('active', val === state.autoSound);
+      });
+    }
+
+    // ─────────────────────────────────
+    // Loading Screen Animation
+    // ─────────────────────────────────
+    function runLoadingSequence() {
+      const lines = document.querySelectorAll('.loading-line');
+      const bar = document.querySelector('.loading-progress-bar');
+      let step = 0;
+      const totalSteps = lines.length;
+
+      const interval = setInterval(() => {
+        if (step < totalSteps) {
+          lines[step].classList.add('active');
+          bar.style.width = ((step + 1) / totalSteps) * 100 + '%';
+          step++;
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            document.getElementById('loading-screen').style.display = 'none';
+            const root = document.getElementById('game-root');
+            root.style.display = 'block';
+            // 메인 메뉴 씬 로드
+            loadScene('mainMenu');
+          }, 500);
+        }
+      }, 700);
+    }
+
+    // ─────────────────────────────────
+    // Event Listeners
+    // ─────────────────────────────────
+    function initEvents() {
+      // Top bar toggles
+      $('#top-lang-toggle').addEventListener('click', () => {
+        state.lang = state.lang === 'ko' ? 'en' : 'ko';
+        saveSettings();
+        updateTopBar();
+        // 현재 씬/패널 UI 갱신
+        if (state.currentSceneId) {
+          const s = scenes[state.currentSceneId];
+          setChapter(s);
+          // 텍스트 한 번 다시 렌더 (지금 진행 중인 블록은 그대로, 다음 블록부터 새 언어로)
+        }
+        if (endingPanel.style.display === 'block') refreshEndingGrid();
+        if (creditsPanel.style.display === 'block') renderCredits();
+        if (settingsPanel.style.display === 'block') renderSettingsPanel();
+      });
+
+      $('#top-sound-toggle').addEventListener('click', () => {
+        toggleGlobalSound();
+      });
+
+      // 메인 메뉴 버튼
+      document.querySelectorAll('.menu-button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const act = btn.dataset.action;
+          if (act === 'start') {
+            // 플래그 초기화
+            state.flags.c3 = state.flags.c4 = state.flags.c5 = state.flags.c6 = null;
+            // Scene0부터 시작
+            loadScene('scene0_intro');
+          } else if (act === 'ending-db') {
+            showEndingDatabase();
+          } else if (act === 'credits') {
+            renderCredits();
+            showPanel(creditsPanel);
+          } else if (act === 'settings') {
+            renderSettingsPanel();
+            showPanel(settingsPanel);
+          }
+        });
+      });
+
+      // 패널 close
+      document.querySelectorAll('.panel-close').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.close;
+          const el = document.getElementById(id);
+          closePanel(el);
+        });
+      });
+
+      // Settings chips
+      document.querySelectorAll('.settings-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const setting = chip.dataset.setting;
+          const value = chip.dataset.value;
+          if (setting === 'lang') {
+            state.lang = value;
+          } else if (setting === 'autoSound') {
+            state.autoSound = value === 'on';
+          }
+          saveSettings();
+          renderSettingsPanel();
+          updateTopBar();
+        });
+      });
+
+      // 스토리 클릭으로 다음 문장
+      clickLayer.addEventListener('click', () => {
+        advanceSequence();
+      });
+    }
+
+    // ─────────────────────────────────
+    // Init
+    // ─────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      applySettingsFromStorage();
+      updateTopBar();
+      initEvents();
+      runLoadingSequence();
+    });
+  </script>
+</body>
+</html>
