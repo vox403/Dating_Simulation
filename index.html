@@ -2651,6 +2651,29 @@
   /* =============================
      장면/스텝 표시
      ============================= */
+function setBackground(bg) {
+  if (!bg) return;
+
+  // mp4이면 비디오로 처리
+  if (bg.toLowerCase().endsWith(".mp4")) {
+    // 이미지 배경 끄고
+    $gameBg.style.backgroundImage = "none";
+
+    // 비디오 켜기
+    $gameVideoBg.classList.remove("hidden");
+    $gameVideoBg.src = bg;
+    $gameVideoBg.currentTime = 0;
+    $gameVideoBg.play().catch(() => {});
+  } else {
+    // 비디오 끄기
+    $gameVideoBg.pause();
+    $gameVideoBg.classList.add("hidden");
+
+    // 이미지 배경
+    $gameBg.style.backgroundImage = `url("${bg}")`;
+  }
+}
+
   function getCurrentSceneObj() {
     const langObj = SCRIPT[gameState.lang];
     if (!langObj) return null;
@@ -2672,29 +2695,6 @@ function refreshChapterAndBg(sceneObj) {
     const sceneObj = getCurrentSceneObj();
     if (!sceneObj) return;
     refreshChapterAndBg(sceneObj);
-
-function setBackground(bg) {
-  if (!bg) return;
-
-  // mp4이면 비디오로 처리
-  if (bg.toLowerCase().endsWith(".mp4")) {
-    // 이미지 배경은 끄고
-    $gameBg.style.backgroundImage = "none";
-
-    // 비디오 켜기
-    $gameVideoBg.classList.remove("hidden");
-    $gameVideoBg.src = bg;
-    $gameVideoBg.currentTime = 0;
-    $gameVideoBg.play().catch(() => {});
-  } else {
-    // 비디오 끄기
-    $gameVideoBg.pause();
-    $gameVideoBg.classList.add("hidden");
-
-    // 이미지 배경 설정
-    $gameBg.style.backgroundImage = `url("${bg}")`;
-  }
-}
 
     // BGM 선택 (scene0~scene5 접두어)
     if (sceneId.startsWith("scene0")) playBgm("scene0");
