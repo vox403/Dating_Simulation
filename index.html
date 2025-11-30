@@ -2750,7 +2750,7 @@ if (step.bg) {
       if (step.autoNext) {
         autoNextTimer = setTimeout(() => {
           advanceStep();
-        }, 3000);
+        }, 10000);
       }
     } else if (step.type === "choice") {
       (step.options || []).forEach((opt, idx) => {
@@ -3013,5 +3013,6 @@ if (step.bg) {
 </script>
 </body>
 </html>
+
 
 
