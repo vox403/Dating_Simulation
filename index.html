@@ -694,17 +694,15 @@
     </div>
   </div>
 
-  <!-- 배경 -->
+  <!-- 배경 (정상 버전 – 1회만 존재해야 함) -->
   <div id="game-bg" class="game-background"></div>
   <video id="game-video-bg" class="game-video-bg hidden" muted loop playsinline></video>
   <div class="game-backdrop"></div>
 
-  <!-- ✅ 계약서 홀로그램 패널 오버레이 -->
+  <!-- 계약서 홀로그램 패널 오버레이 -->
   <div id="contract-overlay" class="game-overlay hidden">
     <div class="contract-panel">
-      <div class="contract-header">
-        VOXTEK EMPLOYMENT &amp; DATA UTILIZATION AGREEMENT
-      </div>
+      <div class="contract-header">VOXTEK EMPLOYMENT & DATA UTILIZATION AGREEMENT</div>
 
       <!-- Korean -->
       <div class="contract-body contract-ko">
@@ -738,7 +736,7 @@
     </div>
   </div>
 
-  <!-- 게임 UI -->
+  <!-- GAME UI -->
   <div class="game-ui" id="game-click-area">
     <div class="chapter-label" id="chapter-label"></div>
     <div class="dialogue-box">
@@ -746,8 +744,7 @@
       <div class="dialogue-text" id="dialogue-text"></div>
       <div class="choices" id="choices"></div>
       <div class="name-input-wrapper hidden" id="name-input-wrapper">
-        <input type="text" id="player-name-input"
-               placeholder="이름을 입력하세요 / Enter your name" />
+        <input type="text" id="player-name-input" placeholder="이름을 입력하세요 / Enter your name" />
         <button id="player-name-confirm">OK</button>
       </div>
       <div class="dialogue-next hidden" id="dialogue-next">NEXT ▷</div>
