@@ -35,66 +35,77 @@
   display: none;
 }
 
-    /* LOADING SCREEN (네가 준 거 그대로 + 약간의 스타일만 추가) */
+    /* LOADING SCREEN */
     #loading-screen {
-      background: radial-gradient(circle at top, #0b1d33 0, #02040a 55%, #000 100%);
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 20;
+      background: radial-gradient(circle at top, #050f1f 0, #02040a 55%, #000 100%);
+      z-index: 50;
     }
 
     .loading-box {
-      border: 1px solid #36e1ff;
-      padding: 24px 28px;
-      width: min(460px, 90vw);
-      background: rgba(3, 9, 18, 0.94);
-      box-shadow: 0 0 32px rgba(54, 225, 255, 0.4);
+      width: min(520px, 90vw);
+      padding: 26px 30px 20px;
+      border-radius: 10px;
+      border: 1px solid #26d1ff;
+      background: radial-gradient(circle at top, rgba(6, 20, 34, 0.96), rgba(3, 9, 18, 0.98));
+      box-shadow:
+        0 0 25px rgba(38, 209, 255, 0.45),
+        0 0 80px rgba(12, 140, 255, 0.35);
     }
 
     .loading-title {
-      font-size: 1rem;
-      letter-spacing: 0.2em;
+      font-size: 0.9rem;
+      letter-spacing: 0.25em;
       text-transform: uppercase;
       color: #36e1ff;
       margin-bottom: 16px;
-      border-bottom: 1px solid rgba(54, 225, 255, 0.25);
-      padding-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(54, 225, 255, 0.28);
     }
 
     .loading-line {
-      font-size: 0.85rem;
-      margin: 6px 0;
+      font-family: "Consolas", "SFMono-Regular", ui-monospace, Menlo, Monaco, monospace;
+      font-size: 0.88rem;
+      line-height: 1.3;
+      margin: 5px 0;
       opacity: 0.12;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
+      transition: opacity 0.25s ease;
+    }
+
+    .loading-line span.en {
+      display: block;
     }
 
     .loading-line span.ko {
-      opacity: 0.8;
-      font-size: 0.8rem;
+      display: block;
+      font-size: 0.78rem;
+      opacity: 0.7;
+      margin-top: 1px;
     }
 
     .loading-line.active {
       opacity: 1;
-      color: #e8f7ff;
+      color: #f3fbff;
     }
 
     .loading-progress {
-      margin-top: 14px;
+      margin-top: 18px;
       width: 100%;
-      height: 4px;
-      background: rgba(13, 42, 66, 0.9);
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(8, 20, 32, 0.95);
       overflow: hidden;
-      border-radius: 99px;
     }
 
     .loading-progress-bar {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #18c6ff, #32e3ff);
-      box-shadow: 0 0 12px rgba(50, 227, 255, 0.9);
+      background: linear-gradient(90deg, #18c6ff, #7c5bff, #ff4af8);
+      box-shadow: 0 0 10px rgba(68, 205, 255, 0.9);
       transition: width 0.3s linear;
     }
 
@@ -526,6 +537,7 @@
   z-index: 0;          /* image 배경과 같은 레이어 */
   background: #000;
 }
+
 /* 이미지/영상 중앙 배치 강제 */
 .game-background,
 .game-video-bg {
@@ -1022,7 +1034,7 @@
               speaker: "V-Sync",
               bg: "201.png",
               text:
-                "V-Sycn : 「 좋습니다。그렇다면, 지금 당장 보내드리죠.[이름]。」",
+                "V-Sycn : 「 좋습니다。그렇다면, 지금 당장 보내드리죠。[이름]。」",
               autoNext: true
             },
             {
@@ -1036,7 +1048,7 @@
               type: "line",
               speaker: "V-Sync",
               bg: "201.png",
-              text: "V-Sync : 「 이제 전송합니다.[이름]。」",
+              text: "V-Sync : 「 이제 전송합니다。[이름]。」",
               autoNext: true
             },
             {
@@ -3013,6 +3025,3 @@ if (step.bg) {
 </script>
 </body>
 </html>
-
-
-
