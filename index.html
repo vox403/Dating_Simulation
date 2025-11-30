@@ -2504,17 +2504,1338 @@
           ]
         },
 
-        /* 이하 en.scene1~scene5 는 ko 버전과 내용만 영어로 동일하게 매핑 */
-        /* (길이 때문에 생략했지만, 패턴은 ko와 완전히 1:1로 맞추면 됨)
-           - scene1_intro / scene1_path1~4
-           - scene2_intro / scene2_path1~4
-           - scene3_intro / scene3_path1~4
-           - scene4_intro / scene4_path1~4
-           - scene5_intro / scene5_end1~4
-        */
+    /* ========== SCENE 1 ========== */
+    scene1_intro: {
+      chapter:
+        "[Scene1] Entertainment District\nChapter 1. First Encounter — VoxTek Scout",
+      bg: "vox_1-0.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "vox_1-0.png",
+          text:
+            "A sudden flash erupts before your eyes, making your vision waver for a moment. As your eyes slowly adjust to the light and you lift your head—",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "vox_1-1.png",
+          text:
+            "Vox stands there, framed by the neon glow of the Entertainment District.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "vox_1-1.png",
+          text:
+            "Vox, as always, stands with perfect posture, one hand resting at his side, wearing that signature smile of his—as if he had known the exact moment you would appear.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "vox_1-1.png",
+          text:
+            "Vox : Hello.\nVox : Well now… looking a bit dazed, aren’t we?\nVox : A demon who dreams is always… irresistible.\nVox : So? How about it?\nVox : Shall we build a better future—just the two of us?",
+          autoNext: false
+        },
+        {
+          type: "choice",
+          choiceId: 3,
+          storeChoiceKey: "c3",
+          options: [
+            {
+              text: "I’ve been waiting for a demon like you!",
+              nextScene: "scene1_path1"
+            },
+            {
+              text: "Let’s hear the terms first. I’m not cheap labor.",
+              nextScene: "scene1_path2"
+            },
+            {
+              text: "…Honestly, someone like you is a little scary.",
+              nextScene: "scene1_path3"
+            },
+            {
+              text: "Not interested. Go shout about it on TV or something.",
+              nextScene: "scene1_path4"
+            }
+          ]
+        }
+      ]
+    },
+
+    scene1_path1: {
+      chapter:
+        "[Scene1] Entertainment District\nChapter 1. First Encounter — VoxTek Scout",
+      bg: "vox_1-2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "vox_1-2.png",
+          text: "[Name] : I’ve been waiting for a demon like you!",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "vox_1-2.png",
+          text: "Vox : An excellent choice.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "And so, you follow Vox toward the V-Tower.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene1_path2: {
+      chapter:
+        "[Scene1] Entertainment District\nChapter 1. First Encounter — VoxTek Scout",
+      bg: "vox_1-2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "vox_1-2.png",
+          text: "[Name] : Let’s hear the terms first. I’m not cheap labor.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "vox_1-2.png",
+          text:
+            "Vox : Hm. Negotiation, is it?\nVox : Very well.\nVox : Let’s head to the V-Tower, and I’ll explain everything slowly—in a way you can understand.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "And so, you follow Vox toward the V-Tower.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene1_path3: {
+      chapter:
+        "[Scene1] Entertainment District\nChapter 1. First Encounter — VoxTek Scout",
+      bg: "vox_1-2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "vox_1-2.png",
+          text: "[Name] : …Honestly, someone like you is a little scary.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "vox_1-2.png",
+          text:
+            "Vox : Oh? In that case, our V-Tower has plenty prepared just for someone like you.\nVox : Stunning fashion, your very own TV show, the chance to become the face of a major campaign… opportunities like that.\nVox : You won’t regret it. Trust me.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "In the end, unable to resist Vox’s persuasion, you head toward the V-Tower.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene1_path4: {
+      chapter:
+        "[Scene1] Entertainment District\nChapter 1. First Encounter — VoxTek Scout",
+      bg: "vox_1-2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "vox_1-2.png",
+          text: "[Name] : Not interested. Go shout about it on TV or something.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "vox_1-2.png",
+          text:
+            "Vox : Ah, a rejection, hm?\nVox : Telling me to go shout on TV—now that’s refreshing.\nVox : Especially considering I’m the king of media.\nVox : But you see… I can’t just let a potential star like you slip away.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "Intrigued by your refusal, Vox insists on \"confirming it himself\" and ends up taking you to the V-Tower anyway.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    /* ========== SCENE 2 (Contract) ========== */
+    scene2_intro: {
+      chapter:
+        "[Scene2] V-Tower · Inside Vox’s Office\nChapter 2. Contract Signing — Terms of Hell",
+      bg: "개인집무실.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "개인집무실.png",
+          text:
+            "As you step into the office, a completely different air settles around you. On the front wall, a massive portrait of Vox—his upper body captured in bold detail—hangs alongside an array of lavish advertisement posters, leaving not a single moment’s doubt about who commands this space.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text:
+            "📄 VoxTek Employment & Data Utilization Agreement\n\nThis agreement defines the rights and obligations related to task execution and data handling between VoxTek (\"the Company\") and you (\"the Contractor\").\nBy selecting Agree, the Contractor is deemed to have accepted all terms below.\n\n(The full contract text is already rendered as a holographic panel in HTML.)",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text:
+            "With a light snap of his fingers, a burst of blue current flashes through the air, and an intricate holographic panel unfolds in an instant.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "계약장면.PNG",
+          text:
+            "Vox : Well then, you’ve come quite a long way. Now… only a very simple procedure remains.\nVox : The contract. They call it a 'simple employment agreement,' but the finer clauses are surprisingly elaborate.\nVox : Of course, most of it can be handled with a single tap on the agree button.",
+          autoNext: false
+        },
+        {
+          type: "choice",
+          choiceId: 4,
+          storeChoiceKey: "c4",
+          options: [
+            {
+              text: "I agree to everything. Let’s get this over with.",
+              nextScene: "scene2_path1"
+            },
+            {
+              text: "Let’s revise the Data Access & Cognitive Permission section. My information belongs to me.",
+              nextScene: "scene2_path2"
+            },
+            {
+              text: "Raise the bonus, and I’ll take the risk.",
+              nextScene: "scene2_path3"
+            },
+            {
+              text: "This is a trap, isn’t it? I’m out.",
+              nextScene: "scene2_path4"
+            }
+          ]
+        }
+      ]
+    },
+
+    scene2_path1: {
+      chapter:
+        "[Scene2] V-Tower · Inside Vox’s Office\nChapter 2. Contract Signing — Terms of Hell",
+      bg: "계약장면.PNG",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text: "[Name] : I agree to everything. Let’s get this over with.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text:
+            "As you tap the Agree to All Terms button, the holographic contract panel flashes blue—and dissolves in an instant.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "개인집무실.png",
+          text:
+            "Vox : Excellent. There’s no attitude I admire more.\nVox : A swift demon is always a successful one.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "And just like that, the contract is sealed. Vox’s satisfied laughter echoes throughout the office.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene2_path2: {
+      chapter:
+        "[Scene2] V-Tower · Inside Vox’s Office\nChapter 2. Contract Signing — Terms of Hell",
+      bg: "계약장면.PNG",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text:
+            "[Name] : Let’s revise the Data Access & Cognitive Permission section. My information belongs to me.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "계약장면.PNG",
+          text:
+            "Vox : Oh… not many demons dare touch that clause.\nVox : But I like that. Negotiation skills are valuable.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text:
+            "With a light snap of his fingers, several lines of the holographic contract instantly shift and rearrange. A new phrase etches itself across the center of the panel: \"Data Access Scope: Restricted.\"",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "계약장면.PNG",
+          text: "Vox : Good. I assume this level of adjustment satisfies you?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "Slowly, you sign the newly revised contract.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene2_path3: {
+      chapter:
+        "[Scene2] V-Tower · Inside Vox’s Office\nChapter 2. Contract Signing — Terms of Hell",
+      bg: "계약장면.PNG",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text: "[Name] : Raise the bonus, and I’ll take the risk.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "계약장면.PNG",
+          text:
+            "Vox : Ha! So you can negotiate.\nVox : Very well. Let’s bump the \"Compensation & Performance Bonuses\" section—just like this.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text:
+            "With a quick sweep of his fingertip across the hologram, the performance bonus value surges to 300%, and the entire section reorders itself at high speed.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "계약장면.PNG",
+          text:
+            "Vox : There. That should be enough motivation for you, yes?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "In the end, through firm bargaining, you secure a far more advantageous compensation package.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene2_path4: {
+      chapter:
+        "[Scene2] V-Tower · Inside Vox’s Office\nChapter 2. Contract Signing — Terms of Hell",
+      bg: "계약장면.PNG",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text: "[Name] : This is a trap, isn’t it? I’m out.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "계약장면.PNG",
+          text:
+            "Vox : …A trap?\nVox : I’m only trying to offer you an extraordinary opportunity.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "계약장면.PNG",
+          text:
+            "He’s still smiling, but something beneath that smile seeps through—something quietly unsettling.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "계약장면.PNG",
+          text:
+            "Vox : Fine. I don’t know what you’re so unhappy about…\nVox : But, in this space…\nVox : I am the king.\nVox : And the law.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "Before he even finishes speaking, Vox shoves the holographic panel toward you with a sharp gesture. And in the end—you’re the one who yields.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    /* ========== SCENE 3 (Studio) ========== */
+    scene3_intro: {
+      chapter:
+        "[Scene3] V-Tower · Inside the 666 News Studio\nChapter 3. First Mission — 'Hell Broadcast'",
+      bg: "studio_1.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_1.png",
+          text:
+            "As the door opens, a surge of intense signals and light digs into your skin. And somewhere in the distance, a voyeuristic laugh echoes—a sound you’ve only ever heard through broadcasts. Facing the studio in person for the first time… there’s something strangely overwhelming about it.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-1.png",
+          text:
+            "Vox : Ratings? From here on out, they’re in your hands.\nVox : This is where opportunity and disaster dance together.\nVox : With just one choice… all of Hell will start seeing you differently.",
+          autoNext: false
+        },
+        {
+          type: "choice",
+          choiceId: 5,
+          storeChoiceKey: "c5",
+          options: [
+            {
+              text: "Make it flashy. I’ll put your name all over the show.",
+              nextScene: "scene3_path1"
+            },
+            {
+              text: "Let’s keep the damage minimal. As long as the ratings go up, right?",
+              nextScene: "scene3_path2"
+            },
+            {
+              text: "I’ve already prepared a face the audience will love.",
+              nextScene: "scene3_path3"
+            },
+            {
+              text: "Can’t I… just not do this broadcast?",
+              nextScene: "scene3_path4"
+            }
+          ]
+        }
+      ]
+    },
+
+    scene3_path1: {
+      chapter:
+        "[Scene3] V-Tower · Inside the 666 News Studio\nChapter 3. First Mission — 'Hell Broadcast'",
+      bg: "studio_2-1.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_2-1.png",
+          text: "[Name] : Make it flashy. I’ll put your name all over the show.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-1.png",
+          text:
+            "Vox : Haha! Now that’s the spirit.\nVox : I knew my choice was the right one.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_2-1.png",
+          text:
+            "With a light sweep of his hand, the studio lights pivot all at once, converging on you. From the speakers, applause with no audience behind it spills into the room—a hollow ovation meant only for you.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "Bathed in the lights, you begin your very first performance. In the corner of the screen, the ratings gauge starts to rise—slowly but surely.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene3_path2: {
+      chapter:
+        "[Scene3] V-Tower · Inside the 666 News Studio\nChapter 3. First Mission — 'Hell Broadcast'",
+      bg: "studio_2-1.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_2-1.png",
+          text:
+            "[Name] : Let’s keep the damage minimal. As long as the ratings go up, right?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-1.png",
+          text:
+            "Vox : …Minimize the damage?\nVox : Hah. I didn’t expect to meet a demon with such… wholesome priorities.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_2-1.png",
+          text:
+            "Vox tilts his head with a soft laugh. It’s a smile that feels like praise and mockery all at once—just unsettling enough to make your skin prickle.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-1.png",
+          text:
+            "Vox : Fine. But remember this.\nVox : Hell’s viewers don’t want \"safe broadcasting.\"\nVox : They want something a little… sharper. Bolder. Something that sticks in their eyes.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-1.png",
+          text:
+            "Vox : So keep it minimal—sure.\nVox : But don’t you dare make it boring.\nVox : I’ll be watching to see how you pull it off.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "And so, you begin preparing a performance that’s careful—but still provocative enough to capture every gaze.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene3_path3: {
+      chapter:
+        "[Scene3] V-Tower · Inside the 666 News Studio\nChapter 3. First Mission — 'Hell Broadcast'",
+      bg: "studio_2-1.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_2-1.png",
+          text: "[Name] : I’ve already prepared a face the audience will love.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-1.png",
+          text:
+            "Vox : …A face?\nVox : Hmph. That’s rather old-fashioned.\nVox : Though… in Hell, that might actually count as a fresh trick.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_2-1.png",
+          text:
+            "Vox lets his gaze slowly travel across your face. At that moment, cameras all around the studio shift their angles at once, locking their focus squarely onto you.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-1.png",
+          text:
+            "Vox : Good. Viewers are weak to “emotion” as bait.\nVox : So that expression—make it count.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "The lights flare brightly against your face, and under that harsh glow, your first crafted expression begins to take shape.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene3_path4: {
+      chapter:
+        "[Scene3] V-Tower · Inside the 666 News Studio\nChapter 3. First Mission — 'Hell Broadcast'",
+      bg: "studio_2-2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_2-2.png",
+          text: "[Name] : Can’t I… just not do this broadcast?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-2.png",
+          text: "Vox : ……Excuse me?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_2-2.png",
+          text: "Vox’s gaze goes cold in an instant.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-2.png",
+          text:
+            "Vox : Interesting. You looked convincing on the outside…\nVox : But I didn’t expect your resolve to be this shallow.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "studio_2-2.png",
+          text:
+            "The moment his words fall, every camera in the studio swings toward you at once. A chill pressure crawls down the back of your neck—impossible to ignore.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "studio_2-2.png",
+          text:
+            "Vox : Fine. If that’s how you want to play it—\nVox : the more you try to run, the more I’ll make you stand out.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "Under Vox’s icy stare, you’re pushed into position for the broadcast. The studio’s signals begin to vibrate—rougher, harsher, rising around you.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    /* ========== SCENE 4 (Exorcist) ========== */
+    scene4_intro: {
+      chapter:
+        "[Scene4] Exterior\nChapter 4. Contact with Outside Forces — White Noise",
+      bg: "exterior_1.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_1.png",
+          text:
+            "After finishing the broadcast and stepping out of the studio, the streets of Hell tremble under an even deeper shade of darkness. And then—a quiet white light begins to seep into the air.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text:
+            "The light slowly takes form, solidifying into the silhouette of an exorcist holding a long spear. A being that should never exist in Hell—yet that very impossibility makes its presence all the more threatening.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text:
+            "?? : You’re aware that Vox is becoming a danger to Heaven, aren’t you?\n?? : And you… I doubt you’re working under him because you truly want to.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text:
+            "?? : I’ll give you a chance to turn things around.\n?? : Cooperate with Heaven—and I’ll free you from him completely.",
+          autoNext: false
+        },
+        {
+          type: "choice",
+          choiceId: 6,
+          storeChoiceKey: "c6",
+          options: [
+            {
+              text: "…You’re saying you can actually redeem me?",
+              nextScene: "scene4_path1"
+            },
+            {
+              text: "(*send an immediate message to Vox*) 「Warning. Angel contact detected.」",
+              nextScene: "scene4_path2"
+            },
+            {
+              text: "I’m not interested in either side. I’ll stick to my own job.",
+              nextScene: "scene4_path3"
+            },
+            {
+              text:
+                "…If it means getting away from Vox, then I’ll accept your offer.",
+              nextScene: "scene4_path4"
+            }
+          ]
+        }
+      ]
+    },
+
+    scene4_path1: {
+      chapter:
+        "[Scene4] Exterior\nChapter 4. Contact with Outside Forces — White Noise",
+      bg: "exterior_2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text: "[Name] : …You’re saying you can actually redeem me?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text:
+            "?? : Redeem… I didn’t expect to hear that word from you.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text:
+            "A pale ripple trembles at the tip of the exorcist’s spear. He studies you for a moment—quiet, assessing—then gives you a small, deliberate nod.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text:
+            "?? : Very well. If you’re willing to cooperate… then so will I.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "You decide to hear him out a little longer.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene4_path2: {
+      chapter:
+        "[Scene4] Exterior\nChapter 4. Contact with Outside Forces — White Noise",
+      bg: "exterior_2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text:
+            "[Name] : (*send an immediate message to Vox*) 「Warning. Angel contact detected.」",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text: "?? : …That’s your choice?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text: "The exorcist’s eyes sharpen in an instant.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text:
+            "?? : Just as I thought—Hell’s creatures can’t be trusted.\n?? : I’ve wasted my time.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "You quietly begin transmitting information about the angel to Vox.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene4_path3: {
+      chapter:
+        "[Scene4] Exterior\nChapter 4. Contact with Outside Forces — White Noise",
+      bg: "exterior_2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text:
+            "[Name] : I’m not interested in either side. I’ll stick to my own job.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text:
+            "?? : Unexpected.\n?? : Choosing a path that belongs to neither Hell nor Heaven…",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text:
+            "The exorcist lowers his spear slightly, studying you in a quiet, measured gaze.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text:
+            "?? : But remember this.\n?? : Independence means… no protection from either side.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "Leaving those words behind, the exorcist dissolves from sight in a swift burst of white light. And so, belonging to no faction at all, you step quietly into the darkness.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene4_path4: {
+      chapter:
+        "[Scene4] Exterior\nChapter 4. Contact with Outside Forces — White Noise",
+      bg: "exterior_2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text:
+            "[Name] : …If it means getting away from Vox, then I’ll accept your offer.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text: "?? : So, you’ve made your decision.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text:
+            "The exorcist narrows his eyes, as if testing the resolve behind your words.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text:
+            "?? : Good. If you want to escape Vox’s shadow—\n?? : the first thing you must do is correct your own path.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "exterior_2.png",
+          text:
+            "He lowers his spear and rests it at his side, then steps toward you with the quiet air of someone greeting a new ally.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "??",
+          bg: "exterior_2.png",
+          text:
+            "?? : From now on, you’ll move under our banner.\n?? : And you do understand… this is a choice you can’t undo.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "You follow after him in silence—taking your first step onto a path completely unlike the one before.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "■ NEXT",
+          autoNext: false
+        }
+      ]
+    },
+
+    /* ========== SCENE 5 (Final War & Endings) ========== */
+    scene5_intro: {
+      chapter:
+        "[Scene5] Pentagram City\nChapter 5. Final Chapter — Ending Branch Point",
+      bg: "war.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "war.png",
+          text:
+            "All of Hell was shaking. Flames, shattered debris, and broken signals churned together, forming a massive, deafening roar across the sky. The war was slowly—yet unmistakably—reaching its end.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "Collapsed and barely holding himself up, Vox’s voice trembles—but within it, there is only one thing left: a demand that you decide how this ends.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "war_2.png",
+          text: "Vox : …Choose.\nVox : Whose side are you on?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "There are no more choices. Every path you’ve walked—all of them converge, right here, into a single ending.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text: "……",
+          autoNext: true
+        }
+      ]
+    },
+
+    scene5_end1: {
+      chapter: "END 1. Conquest Partner",
+      bg: "war_2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "[Name] : I suppose… there’s no helping it.\n[Name] : Seems you really can’t go on without me, can you?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "You reach out your hand. Vox’s screen flickers weakly—then slowly, finally, regains its grin.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "war_2.png",
+          text:
+            "Vox : Yes.\nVox : This is the contract we made… you and I.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "Taking your hand, Vox rises to his feet. He squares his shoulders again, as if the wounds on his body were nothing more than an inconvenience, and lifts his gaze toward the battlefield. And you, too—carrying the same resolve as Vox, step forward with him into the final battle.",
+          autoNext: true
+        },
+        {
+          type: "ending",
+          speaker: "",
+          bg: "mmm111.jpg",
+          endingId: "end1",
+          text:
+            "■ END 1. Conquest Partner\nHell and Heaven rebooted. Business must always stay efficient.",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene5_end2: {
+      chapter: "END 2. Overthrow",
+      bg: "war_2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "[Name] : Now… it’s your turn to follow my plan, Vox.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "Vox’s eyes flicker for an instant. But his body—broken beyond repair—has no strength left to resist.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "[Name] : If you want to live, make a contract with me.\n[Name] : Do that, and 'we' will win this war.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "You extend your hand, quiet and commanding—a gesture of submission, not mercy. Vox swallows hard and lowers his head, finally realizing there is no way left for him to overturn the outcome.",
+          autoNext: true
+        },
+        {
+          type: "ending",
+          speaker: "",
+          bg: "mmm111.jpg",
+          endingId: "end2",
+          text:
+            "■ END 2. Overthrow\nVox. Now you see it, don’t you? This whole game— including you—has been in the palm of my hand.",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene5_end3: {
+      chapter: "END 3. The Betrayer",
+      bg: "war_2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "[Name] : No one ever wanted this war.\n[Name] : Everyone… went too far.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "Vox staggers, as if trying to rise, and looks up at you. Even through the flames and drifting ash of the battlefield, his expression is almost empty.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "Vox",
+          bg: "war_2.png",
+          text:
+            "Vox : ……I see.\nVox : I knew you’d say something like that.\nVox : Not trusting you until the very end… was the right choice after all.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "You choose neither Vox nor the angels—no side at all. You simply turn your back on the heart of the war, and walk away.",
+          autoNext: true
+        },
+        {
+          type: "ending",
+          speaker: "",
+          bg: "mmm111.jpg",
+          endingId: "end3",
+          text:
+            "■ END 3. The Betrayer\nEverything I did… was for peace.",
+          autoNext: false
+        }
+      ]
+    },
+
+    scene5_end4: {
+      chapter: "END 4. Zombie Intern",
+      bg: "war_2.png",
+      steps: [
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text: "[Name] : I’m… just gonna clock out now.",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "war_2.png",
+          text:
+            "Vox blinks once, slowly, staring at you in utter disbelief.\nVox : ……What?",
+          autoNext: true
+        },
+        {
+          type: "line",
+          speaker: "",
+          bg: "black.png",
+          text:
+            "You choose no side—not the war, not Vox, not the angels, not anything. With a half-vacant expression, you simply stumble out of the blood-soaked streets, as if sleepwalking your way off the battlefield.",
+          autoNext: true
+        },
+        {
+          type: "ending",
+          speaker: "",
+          bg: "mmm111.jpg",
+          endingId: "end4",
+          text:
+            "■ END 4. Zombie Intern\nWhy isn’t the work finished yet? I really don’t want overtime…",
+          autoNext: false
+        }
+      ]
+
       }
     }
   };
+function normalizeScript() {
+  ["ko", "en"].forEach(lang => {
+    const langObj = SCRIPT[lang];
+    if (!langObj || !langObj.scenes) return;
+
+    const scenes = langObj.scenes;
+    Object.keys(scenes).forEach(sceneId => {
+      const scene = scenes[sceneId];
+      const originalSteps = scene.steps || [];
+      const newSteps = [];
+
+      originalSteps.forEach(step => {
+        // line 타입 아니거나 줄바꿈 없으면 그대로
+        if (step.type !== "line" || !step.text || step.text.indexOf("\n") === -1) {
+          newSteps.push(step);
+          return;
+        }
+
+        const lines = step.text.split("\n");
+        const base = { ...step };
+
+        lines.forEach((line, idx) => {
+          const trimmed = line.trim();
+          if (!trimmed) return; // 빈 줄은 무시
+
+          const isLast = idx === lines.length - 1;
+          newSteps.push({
+            ...base,
+            text: trimmed,
+            autoNext: !isLast ? true : base.autoNext
+          });
+        });
+      });
+
+      scene.steps = newSteps;
+    });
+  });
+}
+
+normalizeScript();
+
   /* =============================
      게임 상태 & 엔딩 계산
      ============================= */
