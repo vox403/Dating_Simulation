@@ -518,6 +518,15 @@
 .pill-toggle {
   color: #ffffff !important;
 }
+
+.game-video-bg {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  z-index: 0;          /* image 배경과 같은 레이어 */
+  background: #000;
+}
+
   </style>
 </head>
 <body class="vsync-cursor">
@@ -586,8 +595,9 @@
         <button id="game-sound-toggle">ON</button>
       </div>
     </div>
-    <div id="game-bg" class="game-background"></div>
-    <div class="game-backdrop"></div>
+<div id="game-bg" class="game-background"></div>
+<video id="game-video-bg" class="game-video-bg hidden" muted loop playsinline></video>
+<div class="game-backdrop"></div>
     <div class="game-ui" id="game-click-area">
       <div class="chapter-label" id="chapter-label"></div>
       <div class="dialogue-box">
@@ -2558,6 +2568,7 @@
   const $gameSoundToggle= document.getElementById("game-sound-toggle");
 
   const $gameBg         = document.getElementById("game-bg");
+  const $gameVideoBg  = document.getElementById("game-video-bg");
   const $chapterLabel   = document.getElementById("chapter-label");
   const $speakerName    = document.getElementById("speaker-name");
   const $dialogueText   = document.getElementById("dialogue-text");
@@ -2646,13 +2657,13 @@
     return langObj.scenes[gameState.sceneId];
   }
 
-  function refreshChapterAndBg(sceneObj) {
-    if (!sceneObj) return;
-    $chapterLabel.textContent = sceneObj.chapter || "";
-    if (sceneObj.bg) {
-      $gameBg.style.backgroundImage = `url("${sceneObj.bg}")`;
-    }
+function refreshChapterAndBg(sceneObj) {
+  if (!sceneObj) return;
+  $chapterLabel.textContent = sceneObj.chapter || "";
+  if (sceneObj.bg) {
+    setBackground(sceneObj.bg); 
   }
+}
 
   function goToScene(sceneId, stepIndex = 0) {
     gameState.sceneId  = sceneId;
@@ -2661,6 +2672,29 @@
     const sceneObj = getCurrentSceneObj();
     if (!sceneObj) return;
     refreshChapterAndBg(sceneObj);
+
+function setBackground(bg) {
+  if (!bg) return;
+
+  // mp4이면 비디오로 처리
+  if (bg.toLowerCase().endsWith(".mp4")) {
+    // 이미지 배경은 끄고
+    $gameBg.style.backgroundImage = "none";
+
+    // 비디오 켜기
+    $gameVideoBg.classList.remove("hidden");
+    $gameVideoBg.src = bg;
+    $gameVideoBg.currentTime = 0;
+    $gameVideoBg.play().catch(() => {});
+  } else {
+    // 비디오 끄기
+    $gameVideoBg.pause();
+    $gameVideoBg.classList.add("hidden");
+
+    // 이미지 배경 설정
+    $gameBg.style.backgroundImage = `url("${bg}")`;
+  }
+}
 
     // BGM 선택 (scene0~scene5 접두어)
     if (sceneId.startsWith("scene0")) playBgm("scene0");
@@ -2687,9 +2721,9 @@
     $speakerName.textContent = "";
     $dialogueNext.classList.add("hidden");
 
-    if (step.bg) {
-      $gameBg.style.backgroundImage = `url("${step.bg}")`;
-    }
+if (step.bg) {
+  setBackground(step.bg);   
+}
 
     if (step.type === "line") {
       $speakerName.textContent = step.speaker || "";
