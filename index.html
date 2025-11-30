@@ -19,7 +19,7 @@
       cursor: default;
     }
 
-    .hidden { display: none; }
+.hidden { display:none !important; }
 
     .screen {
       position: absolute;
@@ -263,7 +263,7 @@
       min-height: 64px;
       font-size: 0.9rem;
       line-height: 1.5;
-      color: #eaf7ff;
+      color: #ffffff;
     }
 
     .dialogue-next {
@@ -294,12 +294,14 @@
       text-align: left;
       cursor: pointer;
       transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+  color: #ffffff;
     }
 
     .choice-btn:hover {
       background: rgba(20, 54, 90, 0.98);
       transform: translateY(-1px);
       box-shadow: 0 0 12px rgba(50, 227, 255, 0.4);
+  color: #ffffff;
     }
 
     .name-input-wrapper {
