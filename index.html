@@ -859,14 +859,12 @@
   background: rgba(90, 160, 210, 0.9);
   border-radius: 999px;
 }
-    /* 테스트 임시용/삭제할 수도... */
+/* 테스트 임시용/삭제할 수도... */
 .ending-viewer-text {
   display: flex;
   flex-direction: column;
   gap: 6px;
   font-size: 0.9rem;
-  height: 100%;   
-  min-height: 0; 
 }
 
 .ending-viewer-epi-label {
@@ -885,12 +883,21 @@
   opacity: 0.9;
   white-space: pre-line;
 
-  flex: 1;           
-  min-height: 0;   
-  overflow-y: auto;  
-  padding-right: 6px;
+  max-height: 260px;   
+  overflow-y: auto; 
+  padding-right: 6px;  
 }
 
+.ending-viewer-epilogue::-webkit-scrollbar {
+  width: 6px;
+}
+.ending-viewer-epilogue::-webkit-scrollbar-track {
+  background: rgba(5, 12, 24, 0.9);
+}
+.ending-viewer-epilogue::-webkit-scrollbar-thumb {
+  background: rgba(90, 160, 210, 0.9);
+  border-radius: 999px;
+}
     
   </style>
 </head>
@@ -5297,6 +5304,7 @@ function startLoadingSequence() {
 </script>
 </body>
 </html>
+
 
 
 
