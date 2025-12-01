@@ -19,27 +19,20 @@
       cursor: default;
     }
 
-.hidden { display: none; }
+.hidden { display:none !important; }
 
-.screen {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at top, #152032 0, #02040a 55%, #000 100%);
-  overflow: hidden;
-
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition: opacity 0.25s ease;
-}
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #152032 0, #02040a 55%, #000 100%);
+      overflow: hidden;
+    }
 
 .screen.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  display: none;
 }
 
     /* 로딩 화면 */
@@ -5278,4 +5271,3 @@ function startLoadingSequence() {
 </script>
 </body>
 </html>
-
