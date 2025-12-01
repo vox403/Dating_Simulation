@@ -859,6 +859,38 @@
   background: rgba(90, 160, 210, 0.9);
   border-radius: 999px;
 }
+    /* 테스트 임시용/삭제할 수도... */
+.ending-viewer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  height: 100%;   
+  min-height: 0; 
+}
+
+.ending-viewer-epi-label {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #32e3ff;
+  opacity: 0.8;
+}
+
+.ending-viewer-epilogue {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  opacity: 0.9;
+  white-space: pre-line;
+
+  flex: 1;           
+  min-height: 0;   
+  overflow-y: auto;  
+  padding-right: 6px;
+}
+
     
   </style>
 </head>
@@ -5265,6 +5297,7 @@ function startLoadingSequence() {
 </script>
 </body>
 </html>
+
 
 
 
