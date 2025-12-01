@@ -822,6 +822,44 @@
   opacity: 1;
 }
 
+.ending-viewer-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
+  font-size: 0.9rem;
+  max-height: 100%;
+}
+
+.ending-viewer-epi-label {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #32e3ff;
+  opacity: 0.8;
+}
+
+.ending-viewer-epilogue {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  opacity: 0.9;
+  white-space: pre-line;
+  overflow-y: auto;
+}
+
+.ending-viewer-epilogue::-webkit-scrollbar {
+  width: 6px;
+}
+.ending-viewer-epilogue::-webkit-scrollbar-track {
+  background: rgba(5, 12, 24, 0.9);
+}
+.ending-viewer-epilogue::-webkit-scrollbar-thumb {
+  background: rgba(90, 160, 210, 0.9);
+  border-radius: 999px;
+}
+
 
   </style>
 </head>
@@ -1118,7 +1156,13 @@
         <div id="ending-viewer-code" class="ending-viewer-code"></div>
         <div id="ending-viewer-title" class="ending-viewer-title"></div>
         <div id="ending-viewer-desc" class="ending-viewer-desc"></div>
-      </div>
+
+  <div id="ending-viewer-epi-label" class="ending-viewer-epi-label">
+    EPILOGUE
+  </div>
+  <div id="ending-viewer-epilogue" class="ending-viewer-epilogue"></div>
+</div>
+
     </div>
   </div>
 
@@ -1327,6 +1371,140 @@
       }
     }
   ];
+
+const ENDING_EPILOGUES = {
+  end1: {
+    ko:
+"전쟁이 끝난 뒤, 지옥은 빠르게 재정비되었다.\n" +
+"무너진 건물과 깨진 스크린 너머에서 복스는 다시 왕좌를 세웠고,\n" +
+"그의 곁에는 언제나 당신이 있었다.\n\n" +
+"당신이 손을 대는 일마다 질서가 잡히고 효율이 생겨났으며,\n" +
+"복스의 과감함은 당신의 추진력과 결합해\n" +
+"새로운 형태의 ‘정복’을 만들어냈다.\n\n" +
+"지옥의 전파망은 어느 때보다 안정적으로 확장되었고,\n" +
+"모두가 알고 있었다—\n" +
+"이제 복스는 더 이상 혼자가 아니며,\n" +
+"그의 가장 확실한 오른팔은 바로 당신이라는 사실을.",
+    en:
+"After the war ended, Hell recovered with remarkable speed.\n" +
+"Amid the ruins and shattered screens, Vox rebuilt his throne—\n" +
+"and you were always there at his side.\n\n" +
+"Everything you touched brought order, efficiency,\n" +
+"and a clear structure back into the chaos.\n" +
+"Vox’s boldness, paired with your relentless drive,\n" +
+"forged a new kind of conquest unlike anything Hell had seen before.\n\n" +
+"Hell’s signal network expanded more steadily than ever,\n" +
+"and everyone knew—\n" +
+"Vox was no longer ruling alone.\n" +
+"His most reliable right hand,\n" +
+"his surest partner in domination—\n" +
+"was you."
+  },
+
+  end2: {
+    ko:
+"당신의 통치 아래, 지옥의 질서는 완전히 재편되었다.\n" +
+"복스는 한때의 영광을 잃고,\n" +
+"이제는 당신의 뒤를 조용히 따르는—그저 하나의 부속품 같은 존재로 남았다.\n\n" +
+"하지만 그는 결코 반항하지 않았다.\n" +
+"당신에게 굴복하는 이 현실이야말로\n" +
+"살아남기 위한 최선이라는 사실을 누구보다 잘 알고 있었기 때문이다.\n\n" +
+"지옥의 군세는 새로운 왕을 맞이했다.\n" +
+"모두가 당신의 말에 귀를 기울였고,\n" +
+"당신이 고개만 살짝 움직여도 수천 개의 시선이 동시에 반응했다.\n\n" +
+"패배자가 복스라면—승자는 단 하나였다.\n" +
+"지옥의 지배권은 이제 당신의 것이었다.",
+    en:
+"Under your rule, the order of Hell was reshaped entirely.\n" +
+"Vox, stripped of his former glory,\n" +
+"now followed quietly behind you—\n" +
+"little more than an accessory to your reign.\n\n" +
+"Yet he never resisted.\n" +
+"He understood better than anyone that yielding to you\n" +
+"was the only way left for him to survive.\n\n" +
+"Hell’s legions welcomed a new sovereign.\n" +
+"Every demon hung on your every word,\n" +
+"and with the slightest tilt of your head,\n" +
+"thousands of eyes shifted in unison.\n\n" +
+"If Vox was the defeated—\n" +
+"there was only one true victor.\n" +
+"The dominion of Hell now belonged to you."
+  },
+
+  end3: {
+    ko:
+"전쟁의 잔해는 오래도록 사라지지 않았다.\n" +
+"지옥도, 천국도 서로를 경계한 채\n" +
+"조용한 침묵 속에서 겨우 균형을 유지하고 있었다.\n\n" +
+"당신은 그 어느 쪽에도 속하지 않은 채\n" +
+"홀로 길을 걸었다.\n\n" +
+"누군가는 당신을 배신자라 불렀고,\n" +
+"누군가는 균형을 무너뜨린 자라 비난했다.\n" +
+"그러나 또 누군가는—\n" +
+"전쟁을 막을 수 있었던 유일한 존재라며 조용히 속삭였다.\n\n" +
+"이름은 남지 않았지만,\n" +
+"당신이 지나간 자리에선 바람과 재만이 흩날렸다.\n\n" +
+"그리고 그 재 위에서—\n" +
+"아무도 모르게, 새로운 길이 열리고 있었다.",
+    en:
+"The remnants of the war lingered for a long time.\n" +
+"Hell and Heaven watched each other warily,\n" +
+"maintaining a fragile balance in a tense, uneasy silence.\n\n" +
+"You walked alone,\n" +
+"belonging to neither side.\n\n" +
+"Some called you a betrayer.\n" +
+"Others condemned you as the one who disrupted the balance.\n" +
+"Yet there were those who whispered—quietly—\n" +
+"that you were the only one who could have stopped the war.\n\n" +
+"Your name was never recorded,\n" +
+"but in the places you passed,\n" +
+"only wind and drifting ash remained.\n\n" +
+"And upon that ash—\n" +
+"unnoticed by anyone—\n" +
+"a new path was beginning to open."
+  },
+
+  end4: {
+    ko:
+"전쟁은 끝났지만, 당신의 기억은 흐릿했다.\n" +
+"몸은 멀쩡히 움직였고,\n" +
+"가끔은 복스에게 부려 먹히기도 했으며,\n" +
+"또 가끔은 천사에게 쫓기기도 했다.\n\n" +
+"하지만 시간이 지나도\n" +
+"당신은 그때의 판단이나 목적을 떠올릴 수 없었다.\n" +
+"남아 있는 건 단 하나—\n" +
+"\"일해야 한다\"는 막연한 감각뿐이었다.\n\n" +
+"그래서 당신은 매일 조금씩 무언가를 옮기고, 치우고, 메모하며\n" +
+"끝도 없는 업무 루틴을 반복했다.\n\n" +
+"지옥의 누군가가 말했다.\n" +
+"\"하나 떠돌아다니는 인턴이 있다더라.\"\n" +
+"\"죽지도 않고, 쉬지도 않는다던데…\"\n\n" +
+"그리고 어느 날—\n" +
+"폐허가 된 도시의 한 구석에서\n" +
+"당신은 문득 멈춰 서서 중얼거렸다.\n\n" +
+"\"…근데, 내가… 누구 밑에서 일하던 거였지?\"\n\n" +
+"대답해주는 이는 아무도 없었다.",
+    en:
+"The war had ended, but your memories remained foggy.\n" +
+"Your body moved just fine—\n" +
+"sometimes doing grunt work for Vox,\n" +
+"other times getting chased by angels.\n\n" +
+"But no matter how much time passed,\n" +
+"you could never recall your intentions\n" +
+"or the reason behind your choices back then.\n" +
+"Only one thing lingered:\n\n" +
+"A vague, persistent feeling that you… had work to do.\n\n" +
+"So each day, you carried things, cleaned things, wrote notes,\n" +
+"repeating an endless cycle of tasks without question.\n\n" +
+"Rumors began to spread throughout Hell:\n" +
+"\"There’s an intern wandering around.\"\n" +
+"\"They say it never dies… and it never takes a break.\"\n\n" +
+"And then one day—\n"in a ruined corner of the city—\n"you suddenly stopped and muttered to yourself:\n\n" +
+"\"…Wait. Who… was I working for again?\"\n\n" +
+"There was no one left to answer."
+  }
+};
+
 
   function unlockEnding(id) {
     unlockedEndings[id] = true;
@@ -4486,6 +4664,9 @@ const $endingViewerTitle = document.getElementById("ending-viewer-title");
 const $endingViewerDesc  = document.getElementById("ending-viewer-desc");
 const $endingViewerClose = document.getElementById("ending-viewer-close");
 
+const $endingViewerEpiLabel   = document.getElementById("ending-viewer-epi-label");
+const $endingViewerEpilogue   = document.getElementById("ending-viewer-epilogue");
+
 
   /* 화면 전환 & 표시 유틸 */
 function showScreen(el) {
@@ -4802,8 +4983,23 @@ function openEndingViewer(endMeta) {
   $endingViewerTitle.textContent = endMeta.title[settings.lang] || "";
   $endingViewerDesc.textContent  = endMeta.desc[settings.lang] || "";
 
+
+  const epi = ENDING_EPILOGUES[endMeta.id];
+  if (epi) {
+    const text = epi[settings.lang] || epi.ko;
+    $endingViewerEpiLabel.classList.remove("hidden");
+    $endingViewerEpilogue.classList.remove("hidden");
+    $endingViewerEpilogue.textContent = text;
+  } else {
+
+    $endingViewerEpiLabel.classList.add("hidden");
+    $endingViewerEpilogue.classList.add("hidden");
+    $endingViewerEpilogue.textContent = "";
+  }
+
   $endingViewer.classList.remove("hidden");
 }
+
 
 function closeEndingViewer() {
   if (!$endingViewer) return;
