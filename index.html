@@ -750,7 +750,7 @@
   position: relative;
   z-index: 2;
   max-width: min(1080px, 90vw);
-  max-height: min(650px, 85vh);
+  max-height: min(600px, 80vh) !important;
   background: linear-gradient(to bottom, rgba(3,10,18,0.98), rgba(8,24,40,0.98));
   border-radius: 16px;
   border: 1px solid rgba(120, 210, 255, 0.9);
@@ -779,8 +779,9 @@
   height: 100%;
   object-fit: cover;
 }
-    
+
 /* 테스트 임시용/삭제할 수도... */
+
 .ending-viewer-text {
   display: flex;
   flex-direction: column;
@@ -857,8 +858,6 @@
   background: rgba(90, 160, 210, 0.9);
   border-radius: 999px;
 }
-
-  </style>
 
   </style>
 </head>
@@ -5220,32 +5219,39 @@ function startLoadingSequence() {
   const lines = $loadingLines;
   let step = 0;
 
-  function showStep() {
-    if (step < lines.length) {
-      // 한 줄씩 순차적으로 활성화
-      lines[step].classList.add("active");
-      step++;
-      setTimeout(showStep, 900);   
-    } else {
-
+  function finishLoading() {
+    if ($loading) {
+      $loading.style.opacity = "0";
+      $loading.style.pointerEvents = "none";
       setTimeout(() => {
-        if ($loading) {
-          $loading.style.opacity = "0";
-          $loading.style.pointerEvents = "none";
-          setTimeout(() => {
-            $loading.classList.add("hidden"); 
-            showScreen($mainMenu);            
-            playBgm("main");
-          }, 100); 
-        } else {
-
-          showScreen($mainMenu);
-          playBgm("main");
-        }
-      }, 0);
+        $loading.classList.add("hidden");
+        showScreen($mainMenu);
+        playBgm("main");
+      }, 150);   
+    } else {
+      showScreen($mainMenu);
+      playBgm("main");
     }
   }
 
+  function showStep() {
+    if (!lines.length) {
+      finishLoading();
+      return;
+    }
+
+  
+    lines[step].classList.add("active");
+
+    
+    if (step < lines.length - 1) {
+      step++;
+      setTimeout(showStep, 900);
+    } else {
+     
+      setTimeout(finishLoading, 150); 
+    }
+  }
 
   if (lines.length && $loading) {
     $loading.style.opacity = "1";
@@ -5265,13 +5271,3 @@ function startLoadingSequence() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
