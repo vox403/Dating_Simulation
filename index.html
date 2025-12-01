@@ -673,6 +673,55 @@
   display: none;
 }
 
+.choice-btn.selected {
+  border-color: #32e3ff;
+  box-shadow: 0 0 14px rgba(50, 227, 255, 0.8);
+  background: rgba(18, 60, 100, 0.98);
+  transform: translateY(-1px);
+}
+
+.choice-btn.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.transition-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: #000;
+  opacity: 0;
+  z-index: 4;
+  transition: opacity 0.6s ease;
+}
+
+/* 활성화 상태 */
+.transition-overlay.active {
+  opacity: 1;
+}
+
+/* 엔딩별 색감 변화 */
+.transition-overlay.end1 {
+  box-shadow: inset 0 0 120px rgba(50, 227, 255, 0.7);
+}
+
+.transition-overlay.end2 {
+  box-shadow: inset 0 0 120px rgba(255, 80, 120, 0.8);
+}
+
+.transition-overlay.end3 {
+  box-shadow: inset 0 0 120px rgba(180, 180, 180, 0.7);
+}
+
+.transition-overlay.end4 {
+  box-shadow: inset 0 0 120px rgba(120, 255, 120, 0.7);
+}
+
+.transition-overlay.hidden {
+  opacity: 0;
+}
+
+
   </style>
 </head>
 <body class="vsync-cursor">
@@ -729,6 +778,35 @@
     </div>
   </div>
 
+  <!-- REBOOT SCREEN -->
+  <div id="reboot-screen" class="screen hidden">
+    <div class="loading-box">
+      <div class="loading-title">V-Sync SYSTEM REBOOT</div>
+
+      <div class="loading-line reboot-line" data-step="0">
+        <span class="en">Flushing residual signal cache…</span>
+        <span class="ko">잔류 신호 캐시를 삭제하는 중…</span>
+      </div>
+      <div class="loading-line reboot-line" data-step="1">
+        <span class="en">Reinitializing VoxTek protocol layers…</span>
+        <span class="ko">VoxTek 프로토콜 계층을 재초기화하는 중…</span>
+      </div>
+      <div class="loading-line reboot-line" data-step="2">
+        <span class="en">Restoring user access profile…</span>
+        <span class="ko">사용자 접근 프로필을 복원하는 중…</span>
+      </div>
+      <div class="loading-line reboot-line" data-step="3">
+        <span class="en">…Reboot complete. Returning to main interface.</span>
+        <span class="ko">…재부팅 완료. 메인 인터페이스로 복귀합니다.</span>
+      </div>
+
+      <div class="loading-progress">
+        <div class="loading-progress-bar"></div>
+      </div>
+    </div>
+  </div>
+
+
 <!-- GAME SCREEN -->
 <div id="game-screen" class="screen hidden">
   <div class="top-bar">
@@ -742,10 +820,13 @@
     </div>
   </div>
 
-  <!-- 배경 (정상 버전 – 1회만 존재해야 함) -->
+  <!-- 배경 -->
   <div id="game-bg" class="game-background"></div>
   <video id="game-video-bg" class="game-video-bg hidden" muted loop playsinline></video>
   <div class="game-backdrop"></div>
+
+<!-- 엔딩 트랜지션 오버레이 -->
+ <div id="transition-overlay" class="transition-overlay hidden"></div>
 
   <!-- 계약서 홀로그램 패널 오버레이 -->
   <div id="contract-overlay" class="game-overlay hidden">
@@ -4248,6 +4329,7 @@ normalizeScript();
   const $endingDbScreen = document.getElementById("ending-db-screen");
   const $creditsScreen  = document.getElementById("credits-screen");
   const $settingsScreen = document.getElementById("settings-screen");
+  const $rebootScreen   = document.getElementById("reboot-screen");
 
   const $btnStart       = document.getElementById("btn-start");
   const $btnEndingDb    = document.getElementById("btn-ending-db");
@@ -4262,6 +4344,7 @@ normalizeScript();
   const $gameBg         = document.getElementById("game-bg");
   const $gameVideoBg  = document.getElementById("game-video-bg");
   const $chapterLabel   = document.getElementById("chapter-label");
+  const $transitionOverlay = document.getElementById("transition-overlay");
   const $speakerName    = document.getElementById("speaker-name");
   const $dialogueText   = document.getElementById("dialogue-text");
   const $choices        = document.getElementById("choices");
@@ -4280,11 +4363,11 @@ const $contractEn      = document.querySelector(".contract-en");
 
 
   /* 화면 전환 & 표시 유틸 */
-  function showScreen(el) {
-    [$mainMenu, $gameScreen, $endingDbScreen, $creditsScreen, $settingsScreen]
-      .forEach(scr => scr.classList.add("hidden"));
-    el.classList.remove("hidden");
-  }
+function showScreen(el) {
+  [$mainMenu, $gameScreen, $endingDbScreen, $creditsScreen, $settingsScreen, $rebootScreen]
+    .forEach(scr => scr.classList.add("hidden"));
+  el.classList.remove("hidden");
+}
 
   function setLangVisual() {
     $topLangLabel.textContent  = settings.lang === "en" ? "EN" : "KO";
@@ -4383,6 +4466,30 @@ function setBackground(bg) {
   }
 }
 
+function playEndingTransition(endingId, callback) {
+  if (!$transitionOverlay) {
+    callback();
+    return;
+  }
+
+  $transitionOverlay.className = "transition-overlay";
+  $transitionOverlay.classList.remove("hidden");
+
+  // 엔딩별 클래스 부여 (end1~end4)
+  $transitionOverlay.classList.add("active");
+  $transitionOverlay.classList.add(endingId);
+
+  setTimeout(() => {
+    callback();
+
+    setTimeout(() => {
+      $transitionOverlay.classList.remove("active", "end1", "end2", "end3", "end4");
+      $transitionOverlay.classList.add("hidden");
+    }, 700);
+  }, 650);
+}
+
+
   function getCurrentSceneObj() {
     const langObj = SCRIPT[gameState.lang];
     if (!langObj) return null;
@@ -4446,23 +4553,44 @@ if (step.bg) {
           advanceStep();
         }, 10000);
       }
-    } else if (step.type === "choice") {
-      (step.options || []).forEach((opt, idx) => {
-        const btn = document.createElement("button");
-        btn.className = "choice-btn";
-        btn.textContent = opt.text;
-        btn.addEventListener("click", () => {
-          if (step.storeChoiceKey) {
-            gameState.choices[step.storeChoiceKey] = idx + 1; // 1~4
-          }
-          if (opt.nextScene) {
-            goToScene(opt.nextScene, 0);
-          }
-        });
-        $choices.appendChild(btn);
+
+} else if (step.type === "choice") {
+  (step.options || []).forEach((opt, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    btn.textContent = opt.text;
+
+    btn.addEventListener("click", () => {
+
+      if (step.storeChoiceKey) {
+        gameState.choices[step.storeChoiceKey] = idx + 1; // 1~4
+      }
+
+
+      const allBtns = $choices.querySelectorAll(".choice-btn");
+      allBtns.forEach(b => {
+        if (b === btn) {
+          b.classList.add("selected");
+        } else {
+          b.classList.add("disabled");
+        }
       });
-      $dialogueText.textContent = "";
-    } else if (step.type === "nameInput") {
+
+      if (opt.nextScene) {
+        setTimeout(() => {
+          goToScene(opt.nextScene, 0);
+        }, 350); 
+      }
+    });
+
+    $choices.appendChild(btn);
+  });
+  $dialogueText.textContent = "";
+}
+
+
+
+else if (step.type === "nameInput") {
       $dialogueText.textContent = step.namePrompt || "";
       $nameInputWrapper.classList.remove("hidden");
 } else if (step.type === "ending") {
@@ -4484,11 +4612,9 @@ if (step.bg) {
   rebootBtn.className = "reboot-btn";
   rebootBtn.textContent = "REBOOT";
 
-  rebootBtn.onclick = () => {
-    showScreen($mainMenu);
-    playBgm("main");
-    renderEndingDatabase();
-  };
+rebootBtn.onclick = () => {
+  startRebootSequence();
+};
 
   document.querySelector(".dialogue-box").appendChild(rebootBtn);
 }
@@ -4510,18 +4636,23 @@ if (step.bg) {
         return;
       }
 
-      if (sid === "scene5_intro") {
-        const eid = determineEndingFromChoices(); // "end1".."end4"
-        const map = {
-          end1: "scene5_end1",
-          end2: "scene5_end2",
-          end3: "scene5_end3",
-          end4: "scene5_end4"
-        };
-        const next = map[eid] || "scene5_end4";
-        goToScene(next, 0);
-        return;
-      }
+if (sid === "scene5_intro") {
+  const eid = determineEndingFromChoices(); // "end1".."end4"
+  const map = {
+    end1: "scene5_end1",
+    end2: "scene5_end2",
+    end3: "scene5_end3",
+    end4: "scene5_end4"
+  };
+  const next = map[eid] || "scene5_end4";
+
+  playEndingTransition(eid, () => {
+    goToScene(next, 0);
+  });
+  return;
+}
+
+
       return;
     }
     showCurrentStep();
@@ -4683,7 +4814,42 @@ if (step.bg) {
     }
   });
 
+
   /* 로딩 시퀀스 */
+
+function startRebootSequence() {
+  if (!$rebootScreen) {
+
+    showScreen($mainMenu);
+    playBgm("main");
+    renderEndingDatabase();
+    return;
+  }
+
+  showScreen($rebootScreen);
+
+  const lines = $rebootScreen.querySelectorAll(".reboot-line");
+  lines.forEach(l => l.classList.remove("active"));
+
+  let step = 0;
+  function showStep() {
+    if (step < lines.length) {
+      lines[step].classList.add("active");
+      step++;
+      setTimeout(showStep, 800);
+    } else {
+
+      setTimeout(() => {
+        showScreen($mainMenu);
+        playBgm("main");
+        renderEndingDatabase();
+      }, 900);
+    }
+  }
+
+  showStep();
+}
+
 
 function startLoadingSequence() {
   const lines = $loadingLines;
@@ -4734,4 +4900,3 @@ function startLoadingSequence() {
 </script>
 </body>
 </html>
-
