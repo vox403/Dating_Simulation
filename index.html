@@ -823,6 +823,91 @@
 }
 
 
+/* 선택지 파형 효과용 */
+.choice-btn {
+  position: relative;  
+  overflow: hidden;
+}
+
+.choice-btn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice-btn.wave::after {
+  width: 260%;
+  height: 260%;
+  background: radial-gradient(circle, rgba(50, 227, 255, 0.55) 0, transparent 60%);
+  animation: choice-wave-pulse 0.45s ease-out forwards;
+}
+
+@keyframes choice-wave-pulse {
+  0% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* V-Sync 대화창/텍스트 전용 연출 */
+
+body.vsync-speaking .dialogue-box {
+  border-color: rgba(50, 227, 255, 0.95);
+  box-shadow:
+    0 0 20px rgba(50, 227, 255, 0.45),
+    0 0 60px rgba(10, 120, 200, 0.45);
+  animation: vsync-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes vsync-pulse {
+  0%   { box-shadow: 0 0 14px rgba(50,227,255,0.35); }
+  50%  { box-shadow: 0 0 28px rgba(50,227,255,0.8);  }
+  100% { box-shadow: 0 0 14px rgba(50,227,255,0.35); }
+}
+
+body.vsync-speaking .dialogue-text {
+  position: relative;
+  animation: vsync-glitch-shake 0.18s steps(2, end) infinite;
+}
+
+@keyframes vsync-glitch-shake {
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(0.4px, -0.4px); }
+  100% { transform: translate(0, 0); }
+}
+
+body.vsync-speaking .dialogue-text::before,
+body.vsync-speaking .dialogue-text::after {
+  content: attr(data-fulltext);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.13;
+}
+
+body.vsync-speaking .dialogue-text::before {
+  transform: translate(-1px, 0);
+  color: #32e3ff;
+}
+
+body.vsync-speaking .dialogue-text::after {
+  transform: translate(1px, 0);
+  color: #ff4af8;
+}
+
+
   </style>
 </head>
 <body class="vsync-cursor">
@@ -4519,16 +4604,20 @@ function showScreen(el) {
   let currentFullText  = "";
   let currentCharIndex = 0;
 
-  function startTyping(text) {
-    clearTimeout(typingTimer);
-    clearTimeout(autoNextTimer);
-    currentFullText  = replaceNamePlaceholders(text || "");
-    currentCharIndex = 0;
-    isTyping         = true;
-    $dialogueNext.classList.add("hidden");
-    $dialogueText.textContent = "";
-    stepTyping();
-  }
+function startTyping(text) {
+  clearTimeout(typingTimer);
+  clearTimeout(autoNextTimer);
+  currentFullText  = replaceNamePlaceholders(text || "");
+  currentCharIndex = 0;
+  isTyping         = true;
+  $dialogueNext.classList.add("hidden");
+
+  $dialogueText.setAttribute("data-fulltext", currentFullText);
+
+  $dialogueText.textContent = "";
+  stepTyping();
+}
+
 
   function stepTyping() {
     if (!isTyping) return;
@@ -4670,14 +4759,22 @@ if (step.bg) {
   setBackground(step.bg);   
 }
 
-    if (step.type === "line") {
-      $speakerName.textContent = step.speaker || "";
-      startTyping(step.text || "");
-      if (step.autoNext) {
-        autoNextTimer = setTimeout(() => {
-          advanceStep();
-        }, 10000);
-      }
+if (step.type === "line") {
+  const speaker = step.speaker || "";
+  $speakerName.textContent = speaker;
+
+  const isVSyncSpeaker = (speaker === "V-Sync" || speaker === "V-SYNC");
+  document.body.classList.toggle("vsync-speaking", isVSyncSpeaker);
+
+  startTyping(step.text || "");
+
+  if (step.autoNext) {
+    autoNextTimer = setTimeout(() => {
+      advanceStep();
+    }, 10000);
+  }
+}
+
 
 } else if (step.type === "choice") {
   (step.options || []).forEach((opt, idx) => {
@@ -4686,16 +4783,17 @@ if (step.bg) {
     btn.textContent = opt.text;
 
     btn.addEventListener("click", () => {
-
+      // 선택 값 저장
       if (step.storeChoiceKey) {
         gameState.choices[step.storeChoiceKey] = idx + 1; // 1~4
       }
 
-
+      // 버튼 상태 변경 (선택/비활성)
       const allBtns = $choices.querySelectorAll(".choice-btn");
       allBtns.forEach(b => {
         if (b === btn) {
           b.classList.add("selected");
+          b.classList.add("wave");  
         } else {
           b.classList.add("disabled");
         }
@@ -4703,8 +4801,9 @@ if (step.bg) {
 
       if (opt.nextScene) {
         setTimeout(() => {
+          // 다음 씬 이동
           goToScene(opt.nextScene, 0);
-        }, 350); 
+        }, 380);
       }
     });
 
