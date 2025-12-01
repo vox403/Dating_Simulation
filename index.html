@@ -4310,6 +4310,8 @@ function refreshChapterAndBg(sceneObj) {
     clearTimeout(autoNextTimer);
     const sceneObj = getCurrentSceneObj();
     if (!sceneObj) return;
+    const oldReboot = document.getElementById("reboot-btn");
+if (oldReboot) oldReboot.remove();
     const steps = sceneObj.steps || [];
     if (gameState.stepIndex >= steps.length) return;
     const step = steps[gameState.stepIndex];
@@ -4622,3 +4624,4 @@ function startLoadingSequence() {
 </script>
 </body>
 </html>
+
